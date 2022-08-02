@@ -1,7 +1,10 @@
-int a=1;
-int b[2] = {1,1};
-int main(){
-    a  =2;
-    putf("%d:%d",a,a);
+// Use minus with sub in one expr
+int main () {
+    int a;
+    int b;
+    a = -2;
+    b = 1;
+    a = a - -b + -(a + b) % -(a - b);
+    putint(a);
     return 0;
 }

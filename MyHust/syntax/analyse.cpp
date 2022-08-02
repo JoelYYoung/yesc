@@ -181,18 +181,15 @@ parseNode *Analyse::parseAddExp() {
     int intVal2 = cons.intVal2;
     float floatVal1 = cons.floatVal1;
     float floatVal2 = cons.floatVal2;
-    items[0] = opList[0] == parseNode::ADD ? (isInt1 && isInt2 ? new parseNode(intVal1 + intVal2)
-                                : new parseNode((isInt1 ? intVal1 : floatVal1) +
-                                          (isInt2 ? intVal2 : floatVal2)))
-            : (isInt1 && isInt2 ? new parseNode(intVal1 - intVal2)
-                                : new parseNode((isInt1 ? intVal1 : floatVal1) -
-                                          (isInt2 ? intVal2 : floatVal2)));
+    items[0] = opList[0] == parseNode::ADD ? (isInt1 && isInt2 ? new parseNode(intVal1 + intVal2) : new parseNode((isInt1 ? intVal1 : floatVal1) + (isInt2 ? intVal2 : floatVal2)))
+                                           : (isInt1 && isInt2 ? new parseNode(intVal1 - intVal2) : new parseNode((isInt1 ? intVal1 : floatVal1) - (isInt2 ? intVal2 : floatVal2)));
     opList.erase(opList.begin());
   }
   for (int i = 0; i < opList.size(); i++)
   {
     if (items[i + 1]->parseType == parseNode::UNARY_EXP && items[i + 1]->opType == parseNode::NEG) {
       parseNode *val = items[i + 1]->nodes[0];
+      items[i + 1]->nodes[0] = nullptr;
       delete items[i + 1];
       items[i + 1] = val;
       if(opList[i] == parseNode::ADD)
@@ -205,7 +202,6 @@ parseNode *Analyse::parseAddExp() {
     }
   }
   parseNode *root = items[0];
-  
   if (root->parseType == parseNode::L_VAL && root->nodes.size() < root->symbol->dimensions.size()) {
     int multisize = 4;
     for (int i = root->nodes.size() + 1; i < root->symbol->dimensions.size(); i++)
@@ -959,6 +955,7 @@ parseNode *Analyse::parseUnaryExp() {
     return new parseNode(iVal);
   }
   case tokenType::LP: {
+    //cout << tokenInfoList[head+1].getName() << endl;
     getNextToken(1);
     parseNode *root = parseAddExp();
     getNextToken(1);
@@ -1053,6 +1050,7 @@ vector<parseNode *> Analyse::parseLocalVarDef() {
       if (dimensions.empty()) {
         val = util->typeTrans(type, val);
         items.push_back(new parseNode(parseNode::ASSIGN_STMT, false, {new parseNode(parseNode::L_VAL, type == Symbol::FLOAT, symbol, {}), val}));
+        //cout << val->nodes[1]->symbol->name << endl;
       } else {
         items.push_back(new parseNode(parseNode::MEMSET_ZERO, false, symbol, {}));
         unordered_map<int, parseNode *> exps;

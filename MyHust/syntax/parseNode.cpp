@@ -62,15 +62,8 @@ string parseNode::toString(){
     str += "LOCAL_VAR_DEF";
     break;
   case L_VAL:
-    str += "L_VAL";
-    if (symbol->symbolType == Symbol::PARAM)
-    {
-      str += " PARAM";
-    }
-    else if(symbol->symbolType == Symbol::LOCAL_VAR)
-    {
-      str += " LOCAL";
-    }
+    str += "L_VAL:";
+    str += symbol->name;
     break;
   case MEMSET_ZERO:
     str += "MEMSET_ZERO";
