@@ -18,28 +18,28 @@ public:
     BGT,
     BLE,
     BLT,
-    BNE,
+    BNE,  
     BREAK,
     CALL,
     CONTINUE,
     DIV,
-    EQ,
+    EQ, //==
     F2I,
-    GE,
+    GE, //>=
     GOTO,
-    GT,
+    GT, //>
     I2F,
     NOT,
-    LE,
+    LE, //<=
     LDR,
-    LT,
+    LT,  //<
     MEMSET_ZERO,
     MOD,
     MOV,
     MUL,
     NAME,
-    NE,
-    NEG,
+    NE, //!=
+    NEG, // -
     POP,
     PUSH,
     RETURN,
