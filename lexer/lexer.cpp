@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include "lexer.h"
+#include <unistd.h>
 using namespace std;
 char c;
 string token;
@@ -309,13 +310,16 @@ double strToDouble(bool isHex, bool isOct) {
 
 
 void parseSym(FILE *in){
-    while(c!=EOF)
+    while(c!=255)
     {
+        cout << "next token: " << token << endl;
         token.clear();
         c = fgetc(in);
+        cout << "next char: " << c << endl;
+        sleep(1);
         while (!isNewline() && c < 32) {
             c = fgetc(in);
-            if (c == EOF) {
+            if (c == 255) {
                 break;
             }
         }
