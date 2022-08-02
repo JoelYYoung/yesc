@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <unordered_set>
 #include <sstream>
-#include <string>
+#include <string.h>
 
 // active list sort function
 bool cmp(pair<int, int> a, pair<int, int> b){

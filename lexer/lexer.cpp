@@ -310,7 +310,7 @@ double strToDouble(bool isHex, bool isOct) {
 
 
 void parseSym(FILE *in){
-    while(c!=255)
+    while(c!=EOF)
     {
         //cout << "next token: " << token << endl;
         token.clear();
@@ -319,7 +319,7 @@ void parseSym(FILE *in){
         //sleep(1);
         while (!isNewline() && c < 32) {
             c = fgetc(in);
-            if (c == 255) {
+            if (c == EOF) {
                 break;
             }
         }

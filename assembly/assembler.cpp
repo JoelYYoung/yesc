@@ -53,30 +53,80 @@ void Assembler::generateGlobalVarAsm() {  // put lines of global var
         this->asmVector.push_back(buffer.str());
         buffer.clear();
         buffer.str("");
+
+        buffer << globalVar->name << ":";
+        string varInitLine_1 = buffer.str();
+        this->asmVector.push_back(varInitLine_1);
+        buffer.clear();
+        buffer.str("");
+
         if(globalVar->dataType == Symbol::FLOAT){
-            buffer << globalVar->name << ":";
-            string varInitLine_1 = buffer.str();
-            buffer.clear();
-            buffer.str("");
-            unsigned int *f2i = (unsigned int *)&(globalVar->fVal);  // type conversion
-            buffer << "    " << ".long" << "    " << *f2i;
-            string varInitLine_2 = buffer.str();
-            buffer.clear();
-            buffer.str("");
-            this->asmVector.push_back(varInitLine_1);
-            this->asmVector.push_back(varInitLine_2);
+            if(globalVar->dimensions.size() != 0){
+                int globalVarSize = 1;
+                for(int dimSize : globalVar->dimensions){
+                    globalVarSize *= dimSize;
+                }
+                if(globalVar->fMap.size() != 0){
+                    // need to initialize
+                    for(int i = 0; i < globalVarSize; i++){
+                        unsigned int *f2i = (unsigned int *)&(globalVar->fMap[i]);  // type conversion
+                        buffer << "    " << ".long" << "    " << *f2i;
+                        string varInitLine_2 = buffer.str();
+                        buffer.clear();
+                        buffer.str("");
+                        this->asmVector.push_back(varInitLine_2);
+                    }
+                }else{
+                    // no need to initialize
+                    unsigned int *f2i = (unsigned int *)&(globalVar->fVal);  // type conversion
+                    buffer << "    " << ".zero" << "    " << globalVarSize * 4;
+                    string varInitLine_2 = buffer.str();
+                    buffer.clear();
+                    buffer.str("");
+
+                    this->asmVector.push_back(varInitLine_2);
+                }
+            }else{
+                unsigned int *f2i = (unsigned int *)&(globalVar->fVal);  // type conversion
+                buffer << "    " << ".long" << "    " << *f2i;
+                string varInitLine_2 = buffer.str();
+                buffer.clear();
+                buffer.str("");
+                this->asmVector.push_back(varInitLine_2);
+            }
+
         }else{
-            buffer << globalVar->name << ":";
-            string varInitLine_1 = buffer.str();
-            buffer.clear();
-            buffer.str("");
-            unsigned int *si2i = (unsigned int *)&(globalVar->iVal);  //type conversion
-            buffer << "    " << ".long" << "    " << *si2i;
-            string varInitLine_2 = buffer.str();
-            buffer.clear();
-            buffer.str("");
-            this->asmVector.push_back(varInitLine_1);
-            this->asmVector.push_back(varInitLine_2);
+            if(globalVar->dimensions.size() != 0){
+                int globalVarSize = 1;
+                for(int dimSize : globalVar->dimensions){
+                    globalVarSize *= dimSize;
+                }
+                if(globalVar->iMap.size() != 0){
+                    // need to initialize
+                    for(int i = 0; i < globalVarSize; i++){
+                        unsigned int *si2i = (unsigned int *)&(globalVar->iMap[i]);
+                        buffer << "    " << ".long" << "    " << *si2i;
+                        string varInitLine_2 = buffer.str();
+                        buffer.clear();
+                        buffer.str("");
+                        this->asmVector.push_back(varInitLine_2);
+                    }
+                }else{
+                    // no need to initialize
+                    buffer << "    " << ".zero" << "    " << globalVarSize * 4;
+                    string varInitLine_2 = buffer.str();
+                    buffer.clear();
+                    buffer.str("");
+                    this->asmVector.push_back(varInitLine_2);
+                }
+            }else{
+                unsigned int *si2i = (unsigned int *)&(globalVar->iVal);  //type conversion
+                buffer << "    " << ".long" << "    " << *si2i;
+                string varInitLine_2 = buffer.str();
+                buffer.clear();
+                buffer.str("");
+                this->asmVector.push_back(varInitLine_2);
+            }
         }
     }
 }
@@ -648,11 +698,21 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
 
                 if(op3->type == IRItem::IVAR){
-                    buffer << "DIV r" << allocater.getVarRegId(op1Id) << ", r"<< allocater.getVarRegId(op2Id)
-                           <<", r" << allocater.getVarRegId(op3->iVal);
+                    irAsmVectorMap[irId].push_back("PUSH {r0, r1, ip}");
+                    buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
+                    buffer << "MOV r1, r" << allocater.getVarRegId(op3->iVal);
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                    irAsmVectorMap[irId].push_back("BL __aeabi_idiv");
+                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                    irAsmVectorMap[irId].push_back("POP {r0, r1, ip}");
                 }else if(op3->type == IRItem::FVAR){
                     irAsmVectorMap[irId].push_back("PUSH {r0, r1, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
@@ -670,11 +730,21 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.str("");
                     irAsmVectorMap[irId].push_back("POP {r0, r1, ip}");
                 }else if(op3->type == IRItem::INT){
-                    buffer << "DIV r" << allocater.getVarRegId(op1Id) << ", r" << allocater.getVarRegId(op2Id)
-                           << ", #" << op3->iVal;
+                    irAsmVectorMap[irId].push_back("PUSH {r0, r1, ip}");
+                    buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
+                    buffer << "MOV r1, #" << op3->iVal;
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                    irAsmVectorMap[irId].push_back("BL __aeabi_idiv");
+                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                    irAsmVectorMap[irId].push_back("POP {r0, r1, ip}");
                 }else if(op3->type == IRItem::FLOAT){
                     irAsmVectorMap[irId].push_back("PUSH {r0, r1, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
