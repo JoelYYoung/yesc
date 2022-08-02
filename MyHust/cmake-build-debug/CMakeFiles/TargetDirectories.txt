@@ -1,3 +1,0 @@
-/home/joelyang/Documents/bisheng/MyHust_V3/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/joelyang/Documents/bisheng/MyHust_V3/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/joelyang/Documents/bisheng/MyHust_V3/cmake-build-debug/CMakeFiles/hust.dir

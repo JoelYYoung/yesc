@@ -1,4 +1,0 @@
-/opt/clion/clion-2021.3.4/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/opt/clion/clion-2021.3.4/bin/ninja/linux/ninja -G Ninja /home/joelyang/Documents/bisheng/MyHust_V3
--- Configuring done
--- Generating done
--- Build files have been written to: /home/joelyang/Documents/bisheng/MyHust_V3/cmake-build-debug
