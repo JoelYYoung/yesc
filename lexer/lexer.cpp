@@ -312,11 +312,11 @@ double strToDouble(bool isHex, bool isOct) {
 void parseSym(FILE *in){
     while(c!=255)
     {
-        cout << "next token: " << token << endl;
+        //cout << "next token: " << token << endl;
         token.clear();
         c = fgetc(in);
-        cout << "next char: " << c << endl;
-        sleep(1);
+        //cout << "next char: " << c << endl;
+        //sleep(1);
         while (!isNewline() && c < 32) {
             c = fgetc(in);
             if (c == 255) {

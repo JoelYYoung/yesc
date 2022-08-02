@@ -42,15 +42,15 @@ int main(int argc, char **argv)
         }
     }
 
-    cout << "intput file name: " << inputFilename << endl;  
+    //cout << "intput file name: " << inputFilename << endl;  
 
     vector<tokenInfo> tokenlist = lexicalAnalyze(inputFilename);
 
-    cout << "lexicalAnalyze Done" << endl;
+    //cout << "lexicalAnalyze Done" << endl;
 
     Analyse *analyse = new Analyse(tokenlist);
     
-    cout << "syntax Analysis Done" << endl;
+    //cout << "syntax Analysis Done" << endl;
     
     vector<Symbol *> symbolList = analyse->getSymbolTable();
 //    vector<unordered_map<string, Symbol *>> symbolStack = analyse->getSymbolStack();
@@ -65,11 +65,11 @@ int main(int argc, char **argv)
     IRBuild Ir(pn, symbolList);
 //    Ir->printIRs();
 
-    cout << "IR build start" << endl;
+    //cout << "IR build start" << endl;
 
     Ir.printIRs();
     
-    cout << "IR build done" << endl;
+    //cout << "IR build done" << endl;
 //    Symbol * myfunc = Ir.getFuncs()[0].first;
 //    vector<Symbol *> globalList = Ir.getGlobalVars();
 //    vector<Symbol *> localList = Ir.getLocalVars()[myfunc];
@@ -77,8 +77,8 @@ int main(int argc, char **argv)
     //cout << globalList.size() << endl;
     Assembler assembler = Assembler(Ir);
     assembler.generateAsm();
-    cout << "Assembler done " << endl;
+    //cout << "Assembler done " << endl;
     assembler.outputAsm(*output);
-    cout << "Assembler done" << endl;
+    //cout << "Assembler done" << endl;
     return 0;
 }
