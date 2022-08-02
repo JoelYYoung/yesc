@@ -200,7 +200,6 @@ void getStr(FILE *in){
         c = fgetc(in);
         token.push_back(c);
         if (c == '"') {
-            token.pop_back();
             break;
         }
     }

@@ -529,27 +529,37 @@ vector<IR *> IRBuild::parseFormat(parseNode *pn, Symbol *sym, Attribute * att) {
     return ir;
 }
 
-unordered_map<Symbol *, vector<Symbol *>> IRBuild::getLocalVars() {
-    return localList;
-}
-
-vector<pair<Symbol *, vector<IR *>>> IRBuild::getFuncs(){
-    return funcList;
-}
-
-void IRBuild::printIRs() {
+void IRBuild::printIRs(bool silentMode) {
     //cout << 1 << endl;
     parseRoot(root);
-    for (Symbol *con : constList)
-        cout << con->toString() << endl;
-    for (Symbol *global : globalList)
-        cout << global->toString() << endl;
-    //cout << "size:" << funcList.size() << endl;
-    for (pair<Symbol *, vector<IR *>> func : funcList)
-    {
-        cout << func.first->name << endl;
-        //cout << func.second.size() << endl;
-        for (IR *ir : func.second)
-            cout << ir->toString() << endl;
+    if(silentMode == false){
+        for (Symbol *con : constList)
+            cout << con->toString() << endl;
+        for (Symbol *global : globalList)
+            cout << global->toString() << endl;
+        //cout << "size:" << funcList.size() << endl;
+        for (pair<Symbol *, vector<IR *>> func : funcList)
+        {
+            cout << func.first->name << endl;
+            //cout << func.second.size() << endl;
+            for (IR *ir : func.second)
+                cout << ir->toString() << endl;
+        }
     }
+}
+
+unordered_map<Symbol *, vector<Symbol *>> IRBuild::getLocalVars() {
+    return this->localList;
+}
+
+vector<pair<Symbol *, vector<IR *>>> IRBuild::getFuncs() {
+    return this->funcList;
+}
+
+vector<Symbol *> IRBuild::getConsts() {
+    return this->constList;
+}
+
+vector<Symbol *> IRBuild::getGlobalVars() {
+    return this->globalList;
 }

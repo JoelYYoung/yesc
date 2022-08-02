@@ -312,33 +312,6 @@ main.cpp.s:
 	$(MAKE) -f CMakeFiles/hust.dir/build.make CMakeFiles/hust.dir/main.cpp.s
 .PHONY : main.cpp.s
 
-syntax/Util.o: syntax/Util.cpp.o
-
-.PHONY : syntax/Util.o
-
-# target to build an object file
-syntax/Util.cpp.o:
-	$(MAKE) -f CMakeFiles/hust.dir/build.make CMakeFiles/hust.dir/syntax/Util.cpp.o
-.PHONY : syntax/Util.cpp.o
-
-syntax/Util.i: syntax/Util.cpp.i
-
-.PHONY : syntax/Util.i
-
-# target to preprocess a source file
-syntax/Util.cpp.i:
-	$(MAKE) -f CMakeFiles/hust.dir/build.make CMakeFiles/hust.dir/syntax/Util.cpp.i
-.PHONY : syntax/Util.cpp.i
-
-syntax/Util.s: syntax/Util.cpp.s
-
-.PHONY : syntax/Util.s
-
-# target to generate assembly for a file
-syntax/Util.cpp.s:
-	$(MAKE) -f CMakeFiles/hust.dir/build.make CMakeFiles/hust.dir/syntax/Util.cpp.s
-.PHONY : syntax/Util.cpp.s
-
 syntax/analyse.o: syntax/analyse.cpp.o
 
 .PHONY : syntax/analyse.o
@@ -450,9 +423,6 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
-	@echo "... syntax/Util.o"
-	@echo "... syntax/Util.i"
-	@echo "... syntax/Util.s"
 	@echo "... syntax/analyse.o"
 	@echo "... syntax/analyse.i"
 	@echo "... syntax/analyse.s"

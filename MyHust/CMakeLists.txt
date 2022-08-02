@@ -33,4 +33,10 @@ add_executable(hust
 		Ir/IRBuild.cpp
 		Ir/Attribute.h
 		Ir/Attribute.cpp
-        )
+		assembly/Parameter.h
+		assembly/Parameter.cpp
+		assembly/assembler.h
+		assembly/assembler.cpp
+		assembly/allocater.h
+		assembly/allocater.cpp
+		)

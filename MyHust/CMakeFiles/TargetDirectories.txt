@@ -1,3 +1,0 @@
-/home/zyy/Desktop/MyHust/CMakeFiles/rebuild_cache.dir
-/home/zyy/Desktop/MyHust/CMakeFiles/hust.dir
-/home/zyy/Desktop/MyHust/CMakeFiles/edit_cache.dir
