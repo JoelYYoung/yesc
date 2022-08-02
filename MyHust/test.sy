@@ -1,10 +1,44 @@
-// Use minus with sub in one expr
-int main () {
-    int a;
-    int b;
-    a = -2;
-    b = 1;
-    a = a - -b + -(a + b) % -(a - b);
-    putint(a);
+// this is test ///
+/* this is test ///
+*/
+//int a[2] = {1, 2};
+//float f = 0.1;
+//int a = 0;
+//int func(int a, int b, int c, int d, int e){
+   // int f = e;
+    //return f;
+//}
+
+int main(){
+    //a[1] = 1;
+    //float f1 = 0.1;
+    //float f2 = 0.2;
+    int a[3] = {3, 3, 3};
+    //float i = 1.1;
+    //float j = 1.1;
+    //float k = i - 2.2;
+    //int k = func(1, 1, 1, 1, 1);
+    //putint(k);
+    //putf("%d", k);
+    //int k = 0;
+    //int d = func(a);
+    //a[i-1][1] = 4;
+    //if(i >= 1 || i==1)
+    //{
+        //i=3;
+    //}
+    //while(i > 0)
+    //{
+        //i = i - 1;
+        //if(j==0)
+        //{
+            //break;
+        //}
+        //j = j - 1;
+    //}
+    //i = 0;
+    //while(i < 2){
+        //int newx = a[i][0];
+    //}
     return 0;
 }

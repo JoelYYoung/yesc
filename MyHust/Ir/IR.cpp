@@ -106,3 +106,29 @@ string IR::toString() {
   s += ")";
   return s;
 }
+
+vector<IRItem *> IR::getDefVar() {
+    vector<IRItem *> defVarVec;
+    if(this->type == IR::STR){
+        return defVarVec;
+    }
+    if(this->items[0]->type == IRItem::FVAR || this->items[0]->type == IRItem::IVAR){
+        defVarVec.push_back(this->items[0]);
+        return defVarVec;
+    }else{
+        return defVarVec;
+    }
+}
+
+vector<IRItem *> IR::getUseVar() {
+    vector<IRItem *> useVarVec;
+    auto tmpIt = this->items.begin() + 1;
+    if(this->type == IR::STR || this->type == IR::RETURN) tmpIt = this->items.begin();
+    while(tmpIt != this->items.end()){
+        if((*tmpIt)->type == IRItem::FVAR || (*tmpIt)->type == IRItem::IVAR){
+            useVarVec.push_back(*tmpIt);
+        }
+        tmpIt ++;
+    }
+    return useVarVec;
+}

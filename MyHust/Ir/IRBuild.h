@@ -42,7 +42,7 @@ public:
     vector<Symbol *> getGlobalVars();
     unordered_map<Symbol *, vector<Symbol *>> getLocalVars();
     vector<pair<Symbol *, vector<IR *>>> getFuncs();
-    void printIRs();
+    void printIRs(bool silentMode = true);
 
     IRBuild(parseNode *, vector<Symbol *> &);
     ~IRBuild();

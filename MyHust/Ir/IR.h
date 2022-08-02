@@ -54,6 +54,8 @@ public:
   string toString();
 
   void deleteIr(int num);
+  vector<IRItem *> getDefVar();
+  vector<IRItem *> getUseVar();
   IR(IRType);
   IR(IRType, const vector<IRItem *> &);
   ~IR();
