@@ -9,6 +9,7 @@ Parameter& Parameter::operator=(const Parameter &p) {
     paramRegSize = p.paramRegSize;
     func = p.func;
     paramLocationMap = p.paramLocationMap;
+    return *this;
 }
 
 void Parameter::generateParamLocation() {
