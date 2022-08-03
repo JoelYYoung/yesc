@@ -22,8 +22,8 @@ Constant Util::deleteConst(vector<parseNode *> items) {
     (isInt2 = items[1]->parseType == parseNode::INT_LITERAL)
         ? (intVal2 = items[1]->iVal)
         : (floatVal2 = items[1]->fVal);
-    delete items[0];
-    delete items[1];
+    //delete items[0];
+    //delete items[1];
     items.erase(items.begin() + 1);
     Constant cons;
     cons.isInt1 = isInt1;
