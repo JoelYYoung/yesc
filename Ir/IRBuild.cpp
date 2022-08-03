@@ -104,7 +104,9 @@ vector<IR *> IRBuild::parseFuncDef(parseNode * pn, Symbol * sym,Attribute * att)
         vector<IR *> ir = parseTree(nd, sym, att);
         irList.insert(irList.end(), ir.begin(), ir.end());
     }
-    //irList.push_back(new IR(IR::FUNC_END));
+    if (pn->symbol->dataType == Symbol::VOID)
+        irList.push_back(new IR(IR::RETURN));
+    // irList.push_back(new IR(IR::FUNC_END));
     return irList;
 }
 
