@@ -308,11 +308,11 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }else{
-                        buffer << "MOVW r1, , #:lower16:" << *((unsigned *)(&(op3->fVal)));
+                        buffer << "MOVW r1, #:lower16:" << *((unsigned *)(&(op3->fVal)));
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
                         buffer.str("");
-                        buffer << "MOVT r1, , #:upper16:" << *((unsigned *)(&(op3->fVal)));
+                        buffer << "MOVT r1, #:upper16:" << *((unsigned *)(&(op3->fVal)));
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
                         buffer.str("");
@@ -473,7 +473,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
 
-                        buffer << "MOVW r" << allocater.getVarRegId(op1Id) << \
+                        buffer << "MOVT r" << allocater.getVarRegId(op1Id) << \
                             ", #:upper16:" << op2->symbol->name;
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
@@ -682,11 +682,11 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }else{
-                        buffer << "MOVW r1, , #:lower16:" << *((unsigned *)(&(op3->fVal)));
+                        buffer << "MOVW r1, #:lower16:" << *((unsigned *)(&(op3->fVal)));
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
                         buffer.str("");
-                        buffer << "MOVT r1, , #:upper16:" << *((unsigned *)(&(op3->fVal)));
+                        buffer << "MOVT r1, #:upper16:" << *((unsigned *)(&(op3->fVal)));
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
                         buffer.str("");
@@ -778,11 +778,11 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }else{
-                        buffer << "MOVW r1, , #:lower16:" << *((unsigned *)(&(op3->fVal)));
+                        buffer << "MOVW r1, #:lower16:" << *((unsigned *)(&(op3->fVal)));
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
                         buffer.str("");
-                        buffer << "MOVT r1, , #:upper16:" << *((unsigned *)(&(op3->fVal)));
+                        buffer << "MOVT r1, #:upper16:" << *((unsigned *)(&(op3->fVal)));
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
                         buffer.str("");
@@ -853,11 +853,11 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }else{
-                        buffer << "MOVW r1, , #:lower16:" << *((unsigned *)(&(op3->fVal)));
+                        buffer << "MOVW r1, #:lower16:" << *((unsigned *)(&(op3->fVal)));
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
                         buffer.str("");
-                        buffer << "MOVT r1, , #:upper16:" << *((unsigned *)(&(op3->fVal)));
+                        buffer << "MOVT r1, #:upper16:" << *((unsigned *)(&(op3->fVal)));
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
                         buffer.str("");
