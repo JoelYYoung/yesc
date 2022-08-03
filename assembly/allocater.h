@@ -30,6 +30,7 @@ public:
 
     // allocate for variable
     void allocateVar(int irId, vector<int> varIdList, vector<string> &extraInstruction);
+    void prepareForCall(int paramNum, vector<string> &extraInstruction);
     // get position of variable
     int getVarRegId(int varId);
     set<int> getUsedRegister();

@@ -61,6 +61,8 @@ void Allocater::allocateVar(int irId, vector<int> varIdList, vector<string> &ext
                     tmpVarLocationMap[varId] = pair<int, int> (0, spillVarRegId);
                     (*spillItor).first = varId;
                     (*spillItor).second = tmpVarLiveInterval[varId].second;
+                    string stackIncIntruction("SUB sp, sp, #4");
+                    extraInstruction.push_back(stackIncIntruction);
                     buffer << "STR r" << spillVarRegId << ", [ip, #-" << (tmpVarStackOffset+funcLocalVarSize)*4 << "]";
                     string spillIntruction(buffer.str());
                     extraInstruction.push_back(spillIntruction);
@@ -117,6 +119,8 @@ void Allocater::allocateVar(int irId, vector<int> varIdList, vector<string> &ext
                         tmpVarLocationMap[varId] = pair<int, int> (0, spillVarRegId);
                         (*spillItor).first = varId;
                         (*spillItor).second = tmpVarLiveInterval[varId].second;
+                        string stackIncIntruction("SUB sp, sp, #4");
+                        extraInstruction.push_back(stackIncIntruction);
                         buffer << "STR r" << spillVarRegId << ", [ip, #-" << (tmpVarStackOffset+funcLocalVarSize)*4 << "]";
                         string spillIntruction(buffer.str());
                         extraInstruction.push_back(spillIntruction);
@@ -158,4 +162,21 @@ int Allocater::getVarRegId(int varId){
 
 set<int> Allocater::getUsedRegister() {
     return usedRegister;
+}
+
+void Allocater::prepareForCall(int paramNum, vector<string> &extraInstruction) {
+    if(freeStack.size() < paramNum){
+        stringstream buffer;
+        int incNum = paramNum - freeStack.size();
+        for(int i = 0; i < incNum; i++){
+            tmpVarStackOffset += 1;
+            freeStack.insert(tmpVarStackOffset);
+        }
+        buffer << "SUB sp, sp, #" << incNum * 4;
+        string stackIncInstruction(buffer.str());
+        extraInstruction.push_back(stackIncInstruction);
+        buffer.clear();
+        buffer.str("");
+    }
+    return;
 }
