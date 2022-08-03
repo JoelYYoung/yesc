@@ -162,8 +162,8 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
 
     // get local variables
     vector<Symbol *> funcLocalVarList = this->irBuild.getLocalVars()[funcSymbol];
+    int tmpOffset = 0;  // word offset from bottom of func stack(NOT top)
     for(Symbol *funcVar : funcLocalVarList){
-        int tmpOffset = 0;  // word offset from bottom of func stack(NOT top)
         if(funcVar->dimensions.size() == 0){  // is single variable
             symbolStackOffsetMap[funcVar] = ++tmpOffset;
             localDataSize ++;
@@ -630,7 +630,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             case IR::MUL:{
                 // judge if is float!!
                 int op1Id = funcIr->items[0]->iVal;
-                int op2Id = funcIr->items[0]->iVal;
+                int op2Id = funcIr->items[1]->iVal;
                 IRItem *op3 = funcIr->items[2];
                 vector<int> tmpVarList({op1Id, op2Id});
 
@@ -706,7 +706,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             case IR::DIV:{
                 // judge if is float!!
                 int op1Id = funcIr->items[0]->iVal;
-                int op2Id = funcIr->items[0]->iVal;
+                int op2Id = funcIr->items[1]->iVal;
                 IRItem *op3 = funcIr->items[2];
                 vector<int> tmpVarList({op1Id, op2Id});
 
@@ -801,7 +801,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             case IR::SUB:{
                 // judge if is float!!
                 int op1Id = funcIr->items[0]->iVal;
-                int op2Id = funcIr->items[0]->iVal;
+                int op2Id = funcIr->items[1]->iVal;
                 IRItem *op3 = funcIr->items[2];
                 vector<int> tmpVarList({op1Id, op2Id});
 
@@ -1629,7 +1629,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::MOD:{
                 int op1Id = funcIr->items[0]->iVal;
-                int op2Id = funcIr->items[0]->iVal;
+                int op2Id = funcIr->items[1]->iVal;
                 IRItem *op3 = funcIr->items[2];
                 vector<int> tmpVarList({op1Id, op2Id});
 
