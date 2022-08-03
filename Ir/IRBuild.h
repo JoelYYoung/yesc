@@ -41,6 +41,7 @@ public:
     vector<Symbol *> getConsts();
     vector<Symbol *> getGlobalVars();
     unordered_map<Symbol *, vector<Symbol *>> getLocalVars();
+    vector<Symbol *> getSymtemFunc();
     vector<pair<Symbol *, vector<IR *>>> getFuncs();
     void printIRs(bool silentMode = true);
 

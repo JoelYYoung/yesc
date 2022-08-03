@@ -19,6 +19,7 @@ private :
     vector<string> asmVector;       // store asm code by line
     map<Symbol *, string> globalVarLabel;   //store label assigned to global var
     map<Symbol *, Parameter> funcParamMap;  // store info of func parameter
+    map<string, Parameter> sysFuncParamMap;
     void generateGlobalVarAsm();    // global var asm
     void generateFunctionAsm();     // generate asm of functions
     void generateFuncParamInfo();   // generate func param info
