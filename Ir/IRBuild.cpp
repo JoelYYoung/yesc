@@ -8,69 +8,69 @@
 using namespace std;
 
 IRBuild::IRBuild(parseNode *root, vector<Symbol *> &symbols) {
-  this->isProcessed = false;
-  this->varId = 0;
-  this->root = root;
-  this->symbols = symbols;
+    this->isProcessed = false;
+    this->varId = 0;
+    this->root = root;
+    this->symbols = symbols;
 }
 
 IRBuild::~IRBuild() {
-  for (const pair<Symbol *, vector<IR *>> &func : funcList)
-    for (IR *ir : func.second)
-      delete ir;
+    for (const pair<Symbol *, vector<IR *>> &func : funcList)
+        for (IR *ir : func.second)
+            delete ir;
 }
 
 vector<IR *> IRBuild::parseTree(parseNode * pn, Symbol * sym,Attribute * att)
 {
     switch(pn->parseType)
     {
-    case parseNode::ASSIGN_STMT:
-        //cout << "ASS" << endl;
-        return parseAssignExp(pn, sym, att);
-    case parseNode::BINARY_EXP:
-        //cout << "BIN" << endl;
-        return parseBinaryExp(pn, sym, att);
-    case parseNode::UNARY_EXP:
-        return parseUnaryExp(pn, sym, att);
-    case parseNode::BLOCK:
-        //cout << "BLOCK" << endl;
-        return parseBlock(pn,sym, att);
-    case parseNode::INT_LITERAL:
-        //cout << "INT" << endl;
-        return {new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, pn->iVal)})};
-    case parseNode::FLOAT_LITERAL:
-        //cout << "FLOAT" << endl;
-        return {new IR(IR::MOV, {new IRItem(IRItem::FVAR, ++varId), new IRItem(IRItem::FLOAT, pn->fVal)})};
-    case parseNode::L_VAL:
-        //cout << "LVAL" << endl;
-        return parseLVal(pn, sym, att);
-    case parseNode::MEMSET_ZERO:
-        //cout << "MEM" << endl;
-        return {new IR(IR::MEMSET_ZERO, {new IRItem(IRItem::SYMBOL, pn->symbol)})};
-    case parseNode::RETURN_STMT:
-        //cout << "RT" << endl;
-        return parseReturnStmt(pn, sym, att);
-    case parseNode::IF_STMT:
-        return parseIfStmt(pn, sym, att);
-    case parseNode::WHILE_STMT:
-        return parseWhileStmt(pn, sym, att);
-    case parseNode::EXP_STMT:
-        return parseTree(pn->nodes[0], sym, att);
-    case parseNode::LOCAL_VAR_DEF:
-        localList[sym].push_back(pn->symbol);
-        return {};
-    case parseNode::BLANK_STMT:
-        return {};
-    case parseNode::BREAK_STMT:
-        return {new IR(IR::GOTO, {new IRItem(IRItem::INT, att->breakLabel)})};
-    case parseNode::CONTINUE_STMT:
-        return {new IR(IR::GOTO, {new IRItem(IRItem::INT, att->continueLabel)})};
-    case parseNode::FUNC_CALL:
-        return parseFuncCall(pn, sym, att);
-    case parseNode::FORMAT:
-        return parseFormat(pn, sym, att);
-    default:
-        break;
+        case parseNode::ASSIGN_STMT:
+            //cout << "ASS" << endl;
+            return parseAssignExp(pn, sym, att);
+        case parseNode::BINARY_EXP:
+            //cout << "BIN" << endl;
+            return parseBinaryExp(pn, sym, att);
+        case parseNode::UNARY_EXP:
+            return parseUnaryExp(pn, sym, att);
+        case parseNode::BLOCK:
+            //cout << "BLOCK" << endl;
+            return parseBlock(pn,sym, att);
+        case parseNode::INT_LITERAL:
+            //cout << "INT" << endl;
+            return {new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, pn->iVal)})};
+        case parseNode::FLOAT_LITERAL:
+            //cout << "FLOAT" << endl;
+            return {new IR(IR::MOV, {new IRItem(IRItem::FVAR, ++varId), new IRItem(IRItem::FLOAT, pn->fVal)})};
+        case parseNode::L_VAL:
+            //cout << "LVAL" << endl;
+            return parseLVal(pn, sym, att);
+        case parseNode::MEMSET_ZERO:
+            //cout << "MEM" << endl;
+            return {new IR(IR::MEMSET_ZERO, {new IRItem(IRItem::SYMBOL, pn->symbol)})};
+        case parseNode::RETURN_STMT:
+            //cout << "RT" << endl;
+            return parseReturnStmt(pn, sym, att);
+        case parseNode::IF_STMT:
+            return parseIfStmt(pn, sym, att);
+        case parseNode::WHILE_STMT:
+            return parseWhileStmt(pn, sym, att);
+        case parseNode::EXP_STMT:
+            return parseTree(pn->nodes[0], sym, att);
+        case parseNode::LOCAL_VAR_DEF:
+            localList[sym].push_back(pn->symbol);
+            return {};
+        case parseNode::BLANK_STMT:
+            return {};
+        case parseNode::BREAK_STMT:
+            return {new IR(IR::GOTO, {new IRItem(IRItem::INT, att->breakLabel)})};
+        case parseNode::CONTINUE_STMT:
+            return {new IR(IR::GOTO, {new IRItem(IRItem::INT, att->continueLabel)})};
+        case parseNode::FUNC_CALL:
+            return parseFuncCall(pn, sym, att);
+        case parseNode::FORMAT:
+            return parseFormat(pn, sym, att);
+        default:
+            break;
     }
     return {};
 }
@@ -80,17 +80,17 @@ void IRBuild::parseRoot(parseNode * pn){
     {
         switch (nd->parseType)
         {
-        case parseNode::CONST_DEF:
-            constList.push_back(nd->symbol);
-            break;
-        case parseNode::FUNC_DEF:
-            funcList.emplace_back(nd->symbol, parseFuncDef(nd, nd->symbol, new Attribute(0, 0)));
-            break;
-        case parseNode::GLOBAL_VAR_DEF:
-            globalList.push_back(nd->symbol);
-            break;
-        default:
-            break;
+            case parseNode::CONST_DEF:
+                constList.push_back(nd->symbol);
+                break;
+            case parseNode::FUNC_DEF:
+                funcList.emplace_back(nd->symbol, parseFuncDef(nd, nd->symbol, new Attribute(0, 0)));
+                break;
+            case parseNode::GLOBAL_VAR_DEF:
+                globalList.push_back(nd->symbol);
+                break;
+            default:
+                break;
         }
     }
 }
@@ -200,7 +200,7 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
     }
     else
     {
-       if (pn->symbol->symbolType == Symbol::GLOBAL_VAR)
+        if (pn->symbol->symbolType == Symbol::GLOBAL_VAR)
         {
             ir.push_back(new IR(IR::LDR, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::SYMBOL, pn->symbol)}));
             int v = varId;
@@ -242,8 +242,9 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
             {
                 vector<IR *> expir = parseTree(pn->nodes[i], sym, att);
                 ir.insert(ir.end(), expir.begin(), expir.end());
+                ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, d * 4)}));
                 varId++;
-                ir.push_back(new IR(IR::MUL, {new IRItem(IRItem::IVAR, varId), new IRItem(IRItem::IVAR, varId - 2), new IRItem(IRItem::INT, d * 4)}));
+                ir.push_back(new IR(IR::MUL, {new IRItem(IRItem::IVAR, varId), new IRItem(IRItem::IVAR, varId - 3), new IRItem(IRItem::IVAR, varId - 1)}));
                 varId++;
                 ir.push_back(new IR(IR::ADD, {new IRItem(IRItem::IVAR, varId), new IRItem(IRItem::IVAR, varId - 1), new IRItem(IRItem::IVAR, nowid)}));
                 nowid = varId;
@@ -265,25 +266,25 @@ vector<IR*> IRBuild::parseBinaryExp(parseNode * pn, Symbol * sym,Attribute * att
 {
     vector<IR *> ir;
     switch (pn->opType) {
-    case parseNode::ADD:
-    case parseNode::DIV:
-    case parseNode::MOD:
-    case parseNode::MUL:
-    case parseNode::SUB:
-        return parseAlgoExp(pn, sym, att);
-    case parseNode::EQ:
-    case parseNode::GE:
-    case parseNode::GT:
-    case parseNode::LE:
-    case parseNode::LT:
-    case parseNode::NE:
-        return parseCmpExp(pn, sym, att);
-    case parseNode::AND:
-        return parseAndExp(pn, sym,att);
-    case parseNode::OR:
-        return parseOrExp(pn, sym,att);
-    default:
-        break;
+        case parseNode::ADD:
+        case parseNode::DIV:
+        case parseNode::MOD:
+        case parseNode::MUL:
+        case parseNode::SUB:
+            return parseAlgoExp(pn, sym, att);
+        case parseNode::EQ:
+        case parseNode::GE:
+        case parseNode::GT:
+        case parseNode::LE:
+        case parseNode::LT:
+        case parseNode::NE:
+            return parseCmpExp(pn, sym, att);
+        case parseNode::AND:
+            return parseAndExp(pn, sym,att);
+        case parseNode::OR:
+            return parseOrExp(pn, sym,att);
+        default:
+            break;
     }
     return ir;
 }
@@ -295,9 +296,9 @@ vector<IR*> IRBuild::parseOrExp(parseNode* pn,Symbol *sym,Attribute *att) {
     ir.insert(ir.end(), ir1.begin(), ir1.end());
     int t1 = ir1.back()->items[0]->iVal;
     ir.push_back(
-        new IR(IR::BNE, {new IRItem(IRItem::IR_ID, ir1.back()->irId + 1 + (int)irtest.size() + 3),
-                         new IRItem(ir1.back()->items[0]->type, t1),
-                         ir1.back()->items[0]->type == IRItem::IVAR
+            new IR(IR::BNE, {new IRItem(IRItem::IR_ID, ir1.back()->irId + 1 + (int)irtest.size() + 3),
+                             new IRItem(ir1.back()->items[0]->type, t1),
+                             ir1.back()->items[0]->type == IRItem::IVAR
                              ? new IRItem(IRItem::INT, 0)
                              : new IRItem(IRItem::FLOAT, 0)}));
     ir1[0]->deleteIr(irtest.size());
@@ -305,15 +306,15 @@ vector<IR*> IRBuild::parseOrExp(parseNode* pn,Symbol *sym,Attribute *att) {
     int t2 = ir2.back()->items[0]->iVal;
     ir.insert(ir.end(), ir2.begin(), ir2.end());
     ir.push_back(new IR(IR::BNE, {new IRItem(IRItem::IR_ID, ir2.back()->irId + 1 + 3),
-                                    new IRItem(ir2.back()->items[0]->type, t2),
-                                    ir2.back()->items[0]->type == IRItem::IVAR
-                                        ? new IRItem(IRItem::INT, 0)
-                                        : new IRItem(IRItem::FLOAT, 0)}));
+                                  new IRItem(ir2.back()->items[0]->type, t2),
+                                  ir2.back()->items[0]->type == IRItem::IVAR
+                                  ? new IRItem(IRItem::INT, 0)
+                                  : new IRItem(IRItem::FLOAT, 0)}));
     ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId),
-                                    new IRItem(IRItem::INT, 0)}));
+                                  new IRItem(IRItem::INT, 0)}));
     ir.push_back(new IR(IR::GOTO, {new IRItem(IRItem::IR_ID, ir2.back()->irId + 5)}));
     ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, varId),
-                                    new IRItem(IRItem::INT, 1)}));
+                                  new IRItem(IRItem::INT, 1)}));
     return ir;
 }
 
@@ -325,9 +326,9 @@ vector<IR*> IRBuild::parseAndExp(parseNode* pn,Symbol *sym,Attribute *att) {
     int t1 = ir1.back()->items[0]->iVal;
     irtest[0]->deleteIr(irtest.size());
     ir.push_back(
-        new IR(IR::BEQ, {new IRItem(IRItem::IR_ID, ir1.back()->irId + 1 + (int)irtest.size() + 2),
-                         new IRItem(ir1.back()->items[0]->type, t1),
-                         ir1.back()->items[0]->type == IRItem::IVAR
+            new IR(IR::BEQ, {new IRItem(IRItem::IR_ID, ir1.back()->irId + 1 + (int)irtest.size() + 2),
+                             new IRItem(ir1.back()->items[0]->type, t1),
+                             ir1.back()->items[0]->type == IRItem::IVAR
                              ? new IRItem(IRItem::INT, 0)
                              : new IRItem(IRItem::FLOAT, 0)}));
     vector<IR *> ir2 = parseTree(pn->nodes[1], sym, att);
@@ -336,8 +337,8 @@ vector<IR*> IRBuild::parseAndExp(parseNode* pn,Symbol *sym,Attribute *att) {
     ir.push_back(new IR(IR::BNE, {new IRItem(IRItem::IR_ID, ir2.back()->irId + 4),
                                   new IRItem(ir2.back()->items[0]->type, t2),
                                   ir2.back()->items[0]->type == IRItem::IVAR
-                                      ? new IRItem(IRItem::INT, 0)
-                                      : new IRItem(IRItem::FLOAT, 0)}));
+                                  ? new IRItem(IRItem::INT, 0)
+                                  : new IRItem(IRItem::FLOAT, 0)}));
     ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId),
                                   new IRItem(IRItem::INT, 0)}));
     ir.push_back(new IR(IR::GOTO, {new IRItem(IRItem::IR_ID, ir2.back()->irId + 5)}));
@@ -356,23 +357,23 @@ vector<IR*> IRBuild::parseAlgoExp(parseNode * pn, Symbol * sym,Attribute * att)
     IR::IRType type;
     switch (pn->opType)
     {
-    case parseNode::ADD:
-        type = IR::ADD;
-        break;
-    case parseNode::DIV:
-        type = IR::DIV;
-        break;
-    case parseNode::MOD:
-        type = IR::MOD;
-        break;
-    case parseNode::MUL:
-        type = IR::MUL;
-        break;
-    case parseNode::SUB:
-        type = IR::SUB;
-        break;
-    default:
-        break;
+        case parseNode::ADD:
+            type = IR::ADD;
+            break;
+        case parseNode::DIV:
+            type = IR::DIV;
+            break;
+        case parseNode::MOD:
+            type = IR::MOD;
+            break;
+        case parseNode::MUL:
+            type = IR::MUL;
+            break;
+        case parseNode::SUB:
+            type = IR::SUB;
+            break;
+        default:
+            break;
     }
     IRItem::IRItemType type1 = ir1.back()->items[0]->type;
     IRItem::IRItemType type2 = ir2.back()->items[0]->type;
@@ -408,26 +409,26 @@ vector<IR *> IRBuild::parseCmpExp(parseNode *pn, Symbol *sym,Attribute * att) {
     ir.insert(ir.end(), ir2.begin(), ir2.end());
     switch (pn->opType)
     {
-    case parseNode::EQ:
-        type = IR::EQ;
-        break;
-    case parseNode::GE:
-        type = IR::GE;
-        break;
-    case parseNode::GT:
-        type = IR::GT;
-        break;
-    case parseNode::LE:
-        type = IR::LE;
-        break;
-    case parseNode::LT:
-        type = IR::LT;
-        break;
-    case parseNode::NE:
-        type = IR::NE;
-        break;
-    default:
-        break;
+        case parseNode::EQ:
+            type = IR::EQ;
+            break;
+        case parseNode::GE:
+            type = IR::GE;
+            break;
+        case parseNode::GT:
+            type = IR::GT;
+            break;
+        case parseNode::LE:
+            type = IR::LE;
+            break;
+        case parseNode::LT:
+            type = IR::LT;
+            break;
+        case parseNode::NE:
+            type = IR::NE;
+            break;
+        default:
+            break;
     }
     ir.push_back(new IR(type, {new IRItem(IRItem::IVAR, varId++), new IRItem(ir2.back()->items[0]->type, ir2.back()->items[0]->iVal), new IRItem(ir1.back()->items[0]->type, ir1.back()->items[0]->iVal)}));
     return ir;
@@ -479,54 +480,131 @@ vector<IR*> IRBuild::parseUnaryExp(parseNode* pn, Symbol * sym,Attribute * att) 
     vector<IR *> ir = parseTree(pn->nodes[0], sym, att);
     switch (pn->opType)
     {
-    case parseNode::F2I:
-        ir.push_back(new IR(
-            IR::F2I, {new IRItem(IRItem::IVAR, ++varId),
-                      new IRItem(IRItem::FVAR, ir.back()->items[0]->iVal)}));
-        break;
-    case parseNode::I2F:
-        ir.push_back(new IR(
-            IR::I2F, {new IRItem(IRItem::FVAR, ++varId),
-                      new IRItem(IRItem::IVAR, ir.back()->items[0]->iVal)}));
-        break;
-    case parseNode::NOT:
-        ir.push_back(new IR(IR::NOT, {new IRItem(IRItem::IVAR, ++varId),
-                                       new IRItem(ir.back()->items[0]->type,
-                                                  ir.back()->items[0]->iVal)}));
-        break;
-    case parseNode::NEG:
-        ir.push_back(new IR(
-            IR::NEG,
-            {new IRItem(ir.back()->items[0]->type, ++varId),
-             new IRItem(ir.back()->items[0]->type, ir.back()->items[0]->iVal)}));
-        break;
-    default:
-        break;
+        case parseNode::F2I:
+            ir.push_back(new IR(
+                    IR::F2I, {new IRItem(IRItem::IVAR, ++varId),
+                              new IRItem(IRItem::FVAR, ir.back()->items[0]->iVal)}));
+            break;
+        case parseNode::I2F:
+            ir.push_back(new IR(
+                    IR::I2F, {new IRItem(IRItem::FVAR, ++varId),
+                              new IRItem(IRItem::IVAR, ir.back()->items[0]->iVal)}));
+            break;
+        case parseNode::NOT:
+            ir.push_back(new IR(IR::NOT, {new IRItem(IRItem::IVAR, ++varId),
+                                          new IRItem(ir.back()->items[0]->type,
+                                                     ir.back()->items[0]->iVal)}));
+            break;
+        case parseNode::NEG:
+            ir.push_back(new IR(
+                    IR::NEG,
+                    {new IRItem(ir.back()->items[0]->type, ++varId),
+                     new IRItem(ir.back()->items[0]->type, ir.back()->items[0]->iVal)}));
+            break;
+        default:
+            break;
     }
-  return ir;
+    return ir;
 }
 
 vector<IR *> IRBuild::parseFuncCall(parseNode *pn, Symbol *sym, Attribute * att) {
-  vector<IR *> ir;
-  vector<IRItem *> itemList;
-  for (int i = 0; i < pn->nodes.size(); i++)
-  {
-      vector<IR *> irFunc = parseTree(pn->nodes[i], sym, att);
-      ir.insert(ir.end(), irFunc.begin(), irFunc.end());
-      itemList.push_back(new IRItem(irFunc.back()->items[0]->type, ir.back()->items[0]->iVal));
-  }
-  IR *callIR = new IR(IR::CALL, {new IRItem(IRItem::SYMBOL, pn->symbol)});
-  callIR->items.insert(callIR->items.end(), itemList.begin(), itemList.end());
-  ir.push_back(callIR);
-  if (pn->symbol->dataType != Symbol::VOID)
-      ir.push_back(new IR(IR::MOV, {new IRItem(pn->symbol->dataType == Symbol::INT ? IRItem::IVAR : IRItem::FVAR, ++varId), new IRItem(IRItem::RETURN)}));
-  return ir;
+    vector<IR *> ir;
+    vector<IRItem *> itemList;
+    for (int i = 0; i < pn->nodes.size(); i++)
+    {
+        vector<IR *> irFunc = parseTree(pn->nodes[i], sym, att);
+        ir.insert(ir.end(), irFunc.begin(), irFunc.end());
+        itemList.push_back(new IRItem(irFunc.back()->items[0]->type, ir.back()->items[0]->iVal));
+    }
+    IR *callIR = new IR(IR::CALL, {new IRItem(IRItem::SYMBOL, pn->symbol)});
+    callIR->items.insert(callIR->items.end(), itemList.begin(), itemList.end());
+    ir.push_back(callIR);
+    if (pn->symbol->dataType != Symbol::VOID)
+        ir.push_back(new IR(IR::MOV, {new IRItem(pn->symbol->dataType == Symbol::INT ? IRItem::IVAR : IRItem::FVAR, ++varId), new IRItem(IRItem::RETURN)}));
+    return ir;
 }
 
 vector<IR *> IRBuild::parseFormat(parseNode *pn, Symbol *sym, Attribute * att) {
     vector<IR *> ir;
     ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::SVAR, ++varId), new IRItem(IRItem::STRING, pn->format)}));
     return ir;
+}
+
+unordered_map<Symbol *, vector<Symbol *>> IRBuild::getLocalVars() {
+    return localList;
+}
+
+vector<pair<Symbol *, vector<IR *>>> IRBuild::getFuncs(){
+    return funcList;
+}
+
+vector<Symbol *> IRBuild::getGlobalVars() {
+    return globalList;
+}
+
+vector<Symbol *> IRBuild::getConsts() {
+    return constList;
+}
+
+vector<Symbol* > IRBuild::getSymtemFunc() {
+    Symbol *func;
+    Symbol *param1, *param2;
+    vector<Symbol *> symbols;
+    func = new Symbol(Symbol::FUNC, Symbol::INT, "getint", vector<Symbol *>());
+    symbols.push_back(func);
+    // getch
+    func = new Symbol(Symbol::FUNC, Symbol::INT, "getch", vector<Symbol *>());
+    symbols.push_back(func);
+    // getarray
+    param1 = new Symbol(Symbol::PARAM, Symbol::INT, "a", vector<int>{-1});
+    func = new Symbol(Symbol::FUNC, Symbol::INT, "getarray",
+                      vector<Symbol *>{param1});
+    symbols.push_back(func);
+    // getfloat
+    func =
+            new Symbol(Symbol::FUNC, Symbol::FLOAT, "getfloat", vector<Symbol *>());
+    symbols.push_back(func);
+    // getfarray
+    param1 = new Symbol(Symbol::PARAM, Symbol::FLOAT, "a", vector<int>{-1});
+    func = new Symbol(Symbol::FUNC, Symbol::INT, "getfarray",
+                      vector<Symbol *>{param1});
+    symbols.push_back(func);
+    // putint
+    param1 = new Symbol(Symbol::PARAM, Symbol::INT, "a", vector<int>());
+    func = new Symbol(Symbol::FUNC, Symbol::VOID, "putint",
+                      vector<Symbol *>{param1});
+    symbols.push_back(func);
+    // putch
+    param1 = new Symbol(Symbol::PARAM, Symbol::INT, "a", vector<int>());
+    func =
+            new Symbol(Symbol::FUNC, Symbol::VOID, "putch", vector<Symbol *>{param1});
+    symbols.push_back(func);
+    // putarray
+    param1 = new Symbol(Symbol::PARAM, Symbol::INT, "n", vector<int>());
+    param2 = new Symbol(Symbol::PARAM, Symbol::INT, "a", vector<int>{-1});
+    func = new Symbol(Symbol::FUNC, Symbol::VOID, "putarray", vector<Symbol *>{param1, param2});
+    symbols.push_back(func);
+    // putfloat
+    param1 = new Symbol(Symbol::PARAM, Symbol::FLOAT, "a", vector<int>());
+    func = new Symbol(Symbol::FUNC, Symbol::VOID, "putfloat", vector<Symbol *>{param1});
+    symbols.push_back(func);
+    // putfarray
+    param1 = new Symbol(Symbol::PARAM, Symbol::INT, "n", vector<int>());
+    param2 = new Symbol(Symbol::PARAM, Symbol::FLOAT, "a", vector<int>{-1});
+    func = new Symbol(Symbol::FUNC, Symbol::VOID, "putfarray", vector<Symbol *>{param1, param2});
+    symbols.push_back(func);
+
+    param1 = new Symbol(Symbol::PARAM, Symbol::STRING, "format");
+    param2 = new Symbol(Symbol::PARAMLIST, Symbol::LIST, "paramList", vector<Symbol *>());
+    func = new Symbol(Symbol::FUNC, Symbol::VOID, "putf", vector<Symbol *>{param1, param2});
+    symbols.push_back(func);
+    // _sysy_starttime
+    func = new Symbol(Symbol::FUNC, Symbol::VOID, "_sysy_starttime", vector<Symbol *>());
+    symbols.push_back(func);
+    // _sysy_stoptime
+    func = new Symbol(Symbol::FUNC, Symbol::VOID, "_sysy_stoptime", vector<Symbol *>());
+    symbols.push_back(func);
+    return symbols;
 }
 
 void IRBuild::printIRs(bool silentMode) {
@@ -546,20 +624,4 @@ void IRBuild::printIRs(bool silentMode) {
                 cout << ir->toString() << endl;
         }
     }
-}
-
-unordered_map<Symbol *, vector<Symbol *>> IRBuild::getLocalVars() {
-    return this->localList;
-}
-
-vector<pair<Symbol *, vector<IR *>>> IRBuild::getFuncs() {
-    return this->funcList;
-}
-
-vector<Symbol *> IRBuild::getConsts() {
-    return this->constList;
-}
-
-vector<Symbol *> IRBuild::getGlobalVars() {
-    return this->globalList;
 }

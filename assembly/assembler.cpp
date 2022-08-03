@@ -138,6 +138,13 @@ void Assembler::generateFuncParamInfo() {
         funcParam.generateParamLocation();
         funcParamMap[func.first] = funcParam;
     }
+    vector<Symbol *> sysFuncList = this->irBuild.getSymtemFunc();
+    for(Symbol *sysFunc : sysFuncList){
+        Parameter sysFuncParam(sysFunc);
+        sysFuncParam.generateParamLocation();
+        sysFuncParamMap[sysFunc->name] = sysFuncParam;
+        delete sysFunc;
+    }
 }
 
 void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
@@ -516,7 +523,14 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::CALL:{
                 useLR = true;
-                Parameter callFuncParam = funcParamMap[funcIr->items[0]->symbol];
+                auto findParamItor = funcParamMap.find(funcIr->items[0]->symbol);
+                Parameter callFuncParam;
+                if(findParamItor != funcParamMap.end()){
+                    callFuncParam = findParamItor->second;
+                }else{
+                    callFuncParam = sysFuncParamMap[funcIr->items[0]->symbol->name];
+                }
+
                 // preserve register r0-r3, lr, ip
                 int paramRegSize = callFuncParam.getParamRegSize();
                 int paramStackSize = callFuncParam.getParamStackSize();
@@ -898,7 +912,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             case IR::GOTO:{
                 int gotoIrId = funcIr->items[0]->iVal;
                 labelInsertList.push_back(gotoIrId);
-                buffer << "GOTO " << funcSymbol->name << "_label" << gotoIrId;
+                buffer << "B " << funcSymbol->name << "_label" << gotoIrId;
                 irAsmVectorMap[irId].push_back(buffer.str());
                 buffer.clear();
                 buffer.str("");
@@ -1605,6 +1619,55 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }
+            }
+            case IR::MOD:{
+                int op1Id = funcIr->items[0]->iVal;
+                int op2Id = funcIr->items[0]->iVal;
+                IRItem *op3 = funcIr->items[2];
+                vector<int> tmpVarList({op1Id, op2Id});
+
+                if(op3->type == IRItem::IVAR){
+                    tmpVarList.push_back(op3->iVal);
+                }
+
+                vector<string> irAsmList;
+                allocater.allocateVar(irId, tmpVarList, irAsmList);
+                irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
+
+                if(op3->type == IRItem::IVAR) {
+                    irAsmVectorMap[irId].push_back("PUSH {r0, r1, ip}");
+                    buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                    buffer << "MOV r1, r" << allocater.getVarRegId(op3->iVal);
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                    irAsmVectorMap[irId].push_back("BL __aeabi_idivmod");
+                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                    irAsmVectorMap[irId].push_back("POP {r0, r1, ip}");
+                }else if(op3->type == IRItem::INT){
+                    irAsmVectorMap[irId].push_back("PUSH {r0, r1, ip}");
+                    buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                    buffer << "MOV r1, #" << op3->iVal;
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                    irAsmVectorMap[irId].push_back("BL __aeabi_idivmod");
+                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                    irAsmVectorMap[irId].push_back("POP {r0, r1, ip}");
+                }
+                break;
             }
             case IR::NOT:{
                 break;
