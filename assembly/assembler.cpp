@@ -1724,6 +1724,31 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 break;
             }
             case IR::NOT:{
+                int op1Id = funcIr->items[0]->iVal;
+                int op2Id = funcIr->items[1]->iVal;
+
+                vector<int> tmpVarList({op1Id, op2Id});
+
+                vector<string> irAsmList;
+                allocater.allocateVar(irId, tmpVarList, irAsmList);
+                irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
+
+                buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", #0";
+                irAsmVectorMap[irId].push_back(buffer.str());
+                buffer.clear();
+                buffer.str("");
+
+                buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", r"
+                       << allocater.getVarRegId(op1Id);
+                irAsmVectorMap[irId].push_back(buffer.str());
+                buffer.clear();
+                buffer.str("");
+
+                buffer << "MOVEQ r" << allocater.getVarRegId(op1Id) << ", #1";
+                irAsmVectorMap[irId].push_back(buffer.str());
+                buffer.clear();
+                buffer.str("");
+
                 break;
             }
             case IR::NEG:{
