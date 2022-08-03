@@ -175,6 +175,9 @@ parseNode *Analyse::parseAddExp() {
     if (util->judgeItem(items))
       break;
     Constant cons = util->deleteConst(items);
+    delete items[0];
+    delete items[1];
+    items.erase(items.begin() + 1);
     int isInt1 = cons.isInt1;
     int isInt2 = cons.isInt2;
     int intVal1 = cons.intVal1;
@@ -403,6 +406,9 @@ parseNode *Analyse::parseEqExp() {
     if (util->judgeItem(items))
       break;
     Constant cons = util->deleteConst(items);
+    delete items[0];
+    delete items[1];
+    items.erase(items.begin() + 1);
     int isInt1 = cons.isInt1;
     int isInt2 = cons.isInt2;
     int intVal1 = cons.intVal1;
@@ -640,6 +646,9 @@ parseNode *Analyse::parseLAndExp() {
     if (util->judgeItem(items))
       break;
     Constant cons = util->deleteConst(items);
+    delete items[0];
+    delete items[1];
+    items.erase(items.begin() + 1);
     int isInt1 = cons.isInt1;
     int isInt2 = cons.isInt2;
     int intVal1 = cons.intVal1;
@@ -665,6 +674,9 @@ parseNode *Analyse::parseLOrExp() {
     if (util->judgeItem(items))
       break;
     Constant cons = util->deleteConst(items);
+    delete items[0];
+    delete items[1];
+    items.erase(items.begin() + 1);
     items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) || (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
   }
   parseNode *root = items[0];
@@ -733,6 +745,9 @@ parseNode *Analyse::parseMulExp() {
     if (util->judgeItem(items))
       break;
     Constant cons = util->deleteConst(items);
+    delete items[0];
+    delete items[1];
+    items.erase(items.begin() + 1);
     int isInt1 = cons.isInt1;
     int isInt2 = cons.isInt2;
     int intVal1 = cons.intVal1;
@@ -798,6 +813,9 @@ parseNode *Analyse::parseRelExp() {
     if (util->judgeItem(items))
       break;
     Constant cons = util->deleteConst(items);
+    delete items[0];
+    delete items[1];
+    items.erase(items.begin() + 1);
     int isInt1 = cons.isInt1;
     int isInt2 = cons.isInt2;
     int intVal1 = cons.intVal1;
