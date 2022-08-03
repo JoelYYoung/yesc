@@ -467,12 +467,17 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }else if(op2->symbol->symbolType == Symbol::GLOBAL_VAR){
-                        buffer << "LDR r" << allocater.getVarRegId(op1Id) << \
-                            ", =" << op2->symbol->name;
+                        buffer << "MOVW r" << allocater.getVarRegId(op1Id) << \
+                            ", #:lower16:" << op2->symbol->name;
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
                         buffer.str("");
 
+                        buffer << "MOVW r" << allocater.getVarRegId(op1Id) << \
+                            ", #:upper16:" << op2->symbol->name;
+                        irAsmVectorMap[irId].push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
 //                        //if()
 //                        buffer << "LDR r" << allocater.getVarRegId(op1Id) << ", [r"
 //                               << allocater.getVarRegId(op1Id) << "]";
