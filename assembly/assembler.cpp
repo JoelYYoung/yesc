@@ -193,8 +193,9 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
     unordered_map<int, pair<int, int>> tmpVarLiveInterval;
 
         // step 1: live interval cal
-    int irId = 0;
+
     for(IR* funcIr : funcIR){
+        int irId = funcIr->irId;
         vector<IRItem *> defVarList = funcIr->getDefVar();
         vector<IRItem *> useVarList = funcIr->getUseVar();
 
@@ -214,21 +215,19 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 tmpVarLiveInterval[useVarId].second = irId;
             }
         }
-
-        irId++;
     }
     //cout << "live Interval Cal done" << endl;
         // step 2: register allocation
-    irId = 0;
+
     Allocater allocater(tmpVarLiveInterval, localDataSize);
     unordered_map<int, vector<string>> irAsmVectorMap;  // from ir to asm vector
     Parameter funcParam = funcParamMap[funcSymbol];
     vector<tuple<int, int, int, Symbol *>> backFillList;  // list to be back filled, first 1 need "]", second irId, third offset
-    vector<int> labelInsertList;
-    int backFillReturn;
+    unordered_set<int> labelInsertSet;
     bool useLR = false;
     //cout << "Start for" << endl;
     for(IR *funcIr : funcIR){
+        int irId = funcIr->irId;
         //cout << "to irId " << irId << endl;
         irAsmVectorMap[irId] = vector<string>();
         switch(funcIr->type){
@@ -508,17 +507,20 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 break;
             }
             case IR::RETURN:{
-                int op1Id = funcIr->items[0]->iVal;
-                vector<int> tmpVarList({op1Id, });
-                vector<string> irAsmList;
-                allocater.allocateVar(irId, tmpVarList, irAsmList);
-                irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
-                buffer << "MOV r0, r" << allocater.getVarRegId(op1Id);
-                irAsmVectorMap[irId].push_back(buffer.str());
-                backFillReturn = irAsmVectorMap[irId].size();
-                buffer.clear();
-                buffer.str("");
-                irAsmVectorMap[irId].push_back(string("BX lr"));
+                if(funcIr->items.size() != 0){
+                    int op1Id = funcIr->items[0]->iVal;
+                    vector<int> tmpVarList({op1Id, });
+                    vector<string> irAsmList;
+                    allocater.allocateVar(irId, tmpVarList, irAsmList);
+                    irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
+                    buffer << "MOV r0, r" << allocater.getVarRegId(op1Id);
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                    irAsmVectorMap[irId].push_back(string("BX lr"));
+                }else{
+                    irAsmVectorMap[irId].push_back(string("BX lr"));
+                }
                 break;
             }
             case IR::CALL:{
@@ -911,7 +913,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::GOTO:{
                 int gotoIrId = funcIr->items[0]->iVal;
-                labelInsertList.push_back(gotoIrId);
+                labelInsertSet.insert(gotoIrId);
                 buffer << "B " << funcSymbol->name << "_label" << gotoIrId;
                 irAsmVectorMap[irId].push_back(buffer.str());
                 buffer.clear();
@@ -920,7 +922,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::BEQ:{
                 int gotoIrId = funcIr->items[0]->iVal;
-                labelInsertList.push_back(gotoIrId);
+                labelInsertSet.insert(gotoIrId);
                 int op2Id = funcIr->items[1]->iVal;
                 IRItem* op3 = funcIr->items[2];
                 vector<int> tmpVarList({op2Id, });
@@ -954,7 +956,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::BGE:{
                 int gotoIrId = funcIr->items[0]->iVal;
-                labelInsertList.push_back(gotoIrId);
+                labelInsertSet.insert(gotoIrId);
                 int op2Id = funcIr->items[1]->iVal;
                 IRItem* op3 = funcIr->items[2];
                 vector<int> tmpVarList({op2Id, });
@@ -988,7 +990,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::BGT:{
                 int gotoIrId = funcIr->items[0]->iVal;
-                labelInsertList.push_back(gotoIrId);
+                labelInsertSet.insert(gotoIrId);
                 int op2Id = funcIr->items[1]->iVal;
                 IRItem* op3 = funcIr->items[2];
                 vector<int> tmpVarList({op2Id, });
@@ -1022,7 +1024,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::BLE:{
                 int gotoIrId = funcIr->items[0]->iVal;
-                labelInsertList.push_back(gotoIrId);
+                labelInsertSet.insert(gotoIrId);
                 int op2Id = funcIr->items[1]->iVal;
                 IRItem* op3 = funcIr->items[2];
                 vector<int> tmpVarList({op2Id, });
@@ -1056,7 +1058,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::BLT:{
                 int gotoIrId = funcIr->items[0]->iVal;
-                labelInsertList.push_back(gotoIrId);
+                labelInsertSet.insert(gotoIrId);
                 int op2Id = funcIr->items[1]->iVal;
                 IRItem* op3 = funcIr->items[2];
                 vector<int> tmpVarList({op2Id, });
@@ -1090,7 +1092,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::BNE:{
                 int gotoIrId = funcIr->items[0]->iVal;
-                labelInsertList.push_back(gotoIrId);
+                labelInsertSet.insert(gotoIrId);
                 int op2Id = funcIr->items[1]->iVal;
                 IRItem* op3 = funcIr->items[2];
                 vector<int> tmpVarList({op2Id, });
@@ -1682,7 +1684,6 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 irAsmVectorMap[irId].push_back("Not written...");
             }
         }
-        irId += 1;
     }
     // cout << "instruction insertion done" << endl;
     // backFill func parameters after knowing stack
@@ -1701,7 +1702,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
     }
 
     // insert labels for text section
-    for(int labelInsertIr : labelInsertList){
+    for(int labelInsertIr : labelInsertSet){
         buffer << funcSymbol->name << "_label" << labelInsertIr << ":";
         irAsmVectorMap[labelInsertIr].insert(irAsmVectorMap[labelInsertIr].begin(), buffer.str());
         buffer.clear();
@@ -1710,7 +1711,8 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
 
     // insert single ir asm vector to asmVector
     for(int i = 0; i < funcIR.size(); i++){
-        asmVector.insert(asmVector.end(), irAsmVectorMap[i].begin(), irAsmVectorMap[i].end());
+        int irId = i + funcIR[0]->irId;
+        asmVector.insert(asmVector.end(), irAsmVectorMap[irId].begin(), irAsmVectorMap[irId].end());
     }
 
     // insert environment saving and recovering code
