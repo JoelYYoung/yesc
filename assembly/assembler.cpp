@@ -908,7 +908,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 irAsmVectorMap[irId].push_back(buffer.str());
                 buffer.clear();
                 buffer.str("");
-                irAsmVectorMap[irId].push_back("BL __aeabi_f2i");
+                irAsmVectorMap[irId].push_back("BL __aeabi_f2iz");
                 buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
                 irAsmVectorMap[irId].push_back(buffer.str());
                 buffer.clear();
@@ -948,7 +948,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }else if(op3->type == IRItem::INT){
-                    buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", #" <<allocater.getVarRegId(op3->iVal);
+                    buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", #" <<op3->iVal;
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
@@ -982,7 +982,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }else if(op3->type == IRItem::INT){
-                    buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", #" <<allocater.getVarRegId(op3->iVal);
+                    buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", #" <<op3->iVal;
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
@@ -1016,7 +1016,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }else if(op3->type == IRItem::INT){
-                    buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", #" <<allocater.getVarRegId(op3->iVal);
+                    buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", #" <<op3->iVal;
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
@@ -1050,7 +1050,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }else if(op3->type == IRItem::INT){
-                    buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", #" <<allocater.getVarRegId(op3->iVal);
+                    buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", #" <<op3->iVal;
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
@@ -1084,7 +1084,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }else if(op3->type == IRItem::INT){
-                    buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", #" <<allocater.getVarRegId(op3->iVal);
+                    buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", #" <<op3->iVal;
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
@@ -1118,7 +1118,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }else if(op3->type == IRItem::INT){
-                    buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", #" <<allocater.getVarRegId(op3->iVal);
+                    buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", #" <<op3->iVal;
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
@@ -1191,10 +1191,6 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     vector<string> irAsmList;
                     allocater.allocateVar(irId, tmpVarList, irAsmList);
                     irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
-                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", #0";
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    buffer.clear();
-                    buffer.str("");
                     if(op3->type == IRItem::IVAR){
                         buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", r" << allocater.getVarRegId(op3->iVal);
                         irAsmVectorMap[irId].push_back(buffer.str());
@@ -1206,11 +1202,16 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }
+                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", #0";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
                     buffer << "MOVGE r" << allocater.getVarRegId(op1Id) << ", #1";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
                 }
+                break;
             }
             case IR::GT:{
                 int op1Id = funcIr->items[0]->iVal;
@@ -1274,10 +1275,6 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     vector<string> irAsmList;
                     allocater.allocateVar(irId, tmpVarList, irAsmList);
                     irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
-                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", #0";
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    buffer.clear();
-                    buffer.str("");
                     if(op3->type == IRItem::IVAR){
                         buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", r" << allocater.getVarRegId(op3->iVal);
                         irAsmVectorMap[irId].push_back(buffer.str());
@@ -1289,11 +1286,16 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }
+                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", #0";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
                     buffer << "MOVGT r" << allocater.getVarRegId(op1Id) << ", #1";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
                 }
+                break;
             }
             case IR::LE:{
                 int op1Id = funcIr->items[0]->iVal;
@@ -1357,10 +1359,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     vector<string> irAsmList;
                     allocater.allocateVar(irId, tmpVarList, irAsmList);
                     irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
-                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", #0";
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    buffer.clear();
-                    buffer.str("");
+
                     if(op3->type == IRItem::IVAR){
                         buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", r" << allocater.getVarRegId(op3->iVal);
                         irAsmVectorMap[irId].push_back(buffer.str());
@@ -1372,11 +1371,17 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }
+                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", #0";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+
                     buffer << "MOVLE r" << allocater.getVarRegId(op1Id) << ", #1";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
                 }
+                break;
             }
             case IR::LT:{
                 int op1Id = funcIr->items[0]->iVal;
@@ -1440,10 +1445,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     vector<string> irAsmList;
                     allocater.allocateVar(irId, tmpVarList, irAsmList);
                     irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
-                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", #0";
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    buffer.clear();
-                    buffer.str("");
+
                     if(op3->type == IRItem::IVAR){
                         buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", r" << allocater.getVarRegId(op3->iVal);
                         irAsmVectorMap[irId].push_back(buffer.str());
@@ -1455,11 +1457,17 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }
+                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", #0";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+
                     buffer << "MOVLT r" << allocater.getVarRegId(op1Id) << ", #1";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
                 }
+                break;
             }
             case IR::EQ:{
                 int op1Id = funcIr->items[0]->iVal;
@@ -1523,10 +1531,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     vector<string> irAsmList;
                     allocater.allocateVar(irId, tmpVarList, irAsmList);
                     irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
-                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", #0";
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    buffer.clear();
-                    buffer.str("");
+
                     if(op3->type == IRItem::IVAR){
                         buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", r" << allocater.getVarRegId(op3->iVal);
                         irAsmVectorMap[irId].push_back(buffer.str());
@@ -1538,11 +1543,18 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }
+
+                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", #0";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+
                     buffer << "MOVEQ r" << allocater.getVarRegId(op1Id) << ", #1";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
                 }
+                break;
             }
             case IR::NE:{
                 int op1Id = funcIr->items[0]->iVal;
@@ -1606,10 +1618,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     vector<string> irAsmList;
                     allocater.allocateVar(irId, tmpVarList, irAsmList);
                     irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
-                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", #0";
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    buffer.clear();
-                    buffer.str("");
+
                     if(op3->type == IRItem::IVAR){
                         buffer << "CMP r" << allocater.getVarRegId(op2Id) << ", r" << allocater.getVarRegId(op3->iVal);
                         irAsmVectorMap[irId].push_back(buffer.str());
@@ -1621,11 +1630,18 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }
+
+                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", #0";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+
                     buffer << "MOVNE r" << allocater.getVarRegId(op1Id) << ", #1";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
                 }
+                break;
             }
             case IR::MOD:{
                 int op1Id = funcIr->items[0]->iVal;

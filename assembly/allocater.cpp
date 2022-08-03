@@ -61,7 +61,7 @@ void Allocater::allocateVar(int irId, vector<int> varIdList, vector<string> &ext
                     tmpVarLocationMap[varId] = pair<int, int> (0, spillVarRegId);
                     (*spillItor).first = varId;
                     (*spillItor).second = tmpVarLiveInterval[varId].second;
-                    buffer << "STR r" << spillVarRegId << ", [lr, #-" << (tmpVarStackOffset+funcLocalVarSize)*4 << "]";
+                    buffer << "STR r" << spillVarRegId << ", [ip, #-" << (tmpVarStackOffset+funcLocalVarSize)*4 << "]";
                     string spillIntruction(buffer.str());
                     extraInstruction.push_back(spillIntruction);
                     buffer.clear();
@@ -73,7 +73,7 @@ void Allocater::allocateVar(int irId, vector<int> varIdList, vector<string> &ext
                     tmpVarLocationMap[varId] = pair<int, int> (0, spillVarRegId);
                     (*spillItor).first = varId;
                     (*spillItor).second = tmpVarLiveInterval[varId].second;
-                    buffer << "STR r" << spillVarRegId << ", [lr, #-" << (spillStackOffset+funcLocalVarSize)*4 << "]";
+                    buffer << "STR r" << spillVarRegId << ", [ip, #-" << (spillStackOffset+funcLocalVarSize)*4 << "]";
                     string spillIntruction(buffer.str());
                     extraInstruction.push_back(spillIntruction);
                     buffer.clear();
@@ -94,7 +94,7 @@ void Allocater::allocateVar(int irId, vector<int> varIdList, vector<string> &ext
                     freeRegister.erase(freeRegister.begin());
                     usedRegister.insert(allocateRegId);
                     freeStack.insert(freeStackId);
-                    buffer << "LDR r" << allocateRegId << ", [lr, #-" << (freeStackId + funcLocalVarSize) * 4 << "]";
+                    buffer << "LDR r" << allocateRegId << ", [ip, #-" << (freeStackId + funcLocalVarSize) * 4 << "]";
                     string loadInstruction(buffer.str());
                     extraInstruction.push_back(loadInstruction);
                     buffer.clear();
@@ -117,7 +117,7 @@ void Allocater::allocateVar(int irId, vector<int> varIdList, vector<string> &ext
                         tmpVarLocationMap[varId] = pair<int, int> (0, spillVarRegId);
                         (*spillItor).first = varId;
                         (*spillItor).second = tmpVarLiveInterval[varId].second;
-                        buffer << "STR r" << spillVarRegId << ", [lr, -" << (tmpVarStackOffset+funcLocalVarSize)*4 << "]";
+                        buffer << "STR r" << spillVarRegId << ", [ip, #-" << (tmpVarStackOffset+funcLocalVarSize)*4 << "]";
                         string spillIntruction(buffer.str());
                         extraInstruction.push_back(spillIntruction);
                         buffer.clear();
@@ -129,14 +129,14 @@ void Allocater::allocateVar(int irId, vector<int> varIdList, vector<string> &ext
                         tmpVarLocationMap[varId] = pair<int, int> (0, spillVarRegId);
                         (*spillItor).first = varId;
                         (*spillItor).second = tmpVarLiveInterval[varId].second;
-                        buffer << "STR r" << spillVarRegId << ", [lr, #-" << (spillStackOffset+funcLocalVarSize)*4 << "]";
+                        buffer << "STR r" << spillVarRegId << ", [ip, #-" << (spillStackOffset+funcLocalVarSize)*4 << "]";
                         string spillIntruction(buffer.str());
                         extraInstruction.push_back(spillIntruction);
                         buffer.clear();
                         buffer.str("");
                     }
                     freeStack.insert(freeStackId);
-                    buffer << "LDR r" << spillVarRegId << ", [lr, #-" << (freeStackId + funcLocalVarSize) * 4 << "]";
+                    buffer << "LDR r" << spillVarRegId << ", [ip, #-" << (freeStackId + funcLocalVarSize) * 4 << "]";
                     string loadInstruction(buffer.str());
                     extraInstruction.push_back(loadInstruction);
                     buffer.clear();
