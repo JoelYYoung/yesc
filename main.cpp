@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     vector<Symbol *> symbolList = analyse->getSymbolTable();
     parseNode *pn = analyse->getparseNode();
     IRBuild Ir(pn, symbolList);
-    Ir.printIRs(true);
+    Ir.printIRs(false);
 
     Assembler assembler = Assembler(Ir);
     assembler.generateAsm();
