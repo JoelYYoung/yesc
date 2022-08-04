@@ -46,7 +46,9 @@ void Assembler::generateGlobalVarAsm() {  // put lines of global var
 //    }
 
     // data section
-    this->asmVector.push_back(string(".data"));
+    if(globalVarList.size() > 0){
+        this->asmVector.push_back(string(".data"));
+    }
 
     for(auto globalVar : globalVarList){  //put lines of initialization
         buffer << ".global " << globalVar->name;
@@ -152,6 +154,8 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
     vector<IR *> &funcIR = func.second;
     asmVector.push_back("");
     asmVector.push_back(".global " + funcSymbol->name);
+    asmVector.push_back(".type   " + funcSymbol->name + ", %function");
+
     asmVector.push_back(funcSymbol->name + ":");
     int firstAsmIndex = asmVector.size();
 
@@ -752,6 +756,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 if(op3->type == IRItem::IVAR){
                     irAsmVectorMap[irId].push_back("PUSH {r0, r1, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
+                    //cout << "op2Id is" << op2Id << endl;
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
