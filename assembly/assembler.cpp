@@ -294,11 +294,30 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }else{
-                        buffer << "ADD r" << allocater.getVarRegId(op1Id) << ", r" << allocater.getVarRegId(op2->iVal)
-                               << ", #" << op3->iVal;
-                        irAsmVectorMap[irId].push_back(buffer.str());
-                        buffer.clear();
-                        buffer.str("");
+                        if((op3->iVal) > 255 || (op3->iVal) < -255){
+                            buffer << "MOVW r" << allocater.getVarRegId(op1Id)
+                                   << ", #:lower16:" << *((unsigned *)(&(op3->fVal)));
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+                            buffer << "MOVT r" << allocater.getVarRegId(op1Id)
+                                   << ", #:upper16:" << *((unsigned *)(&(op3->fVal)));
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+
+                            buffer << "ADD r" << allocater.getVarRegId(op1Id) << ", r" << allocater.getVarRegId(op2->iVal)
+                                   << ", r" << allocater.getVarRegId(op1Id);
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+                        }else{
+                            buffer << "ADD r" << allocater.getVarRegId(op1Id) << ", r" << allocater.getVarRegId(op2->iVal)
+                                   << ", #" << op3->iVal;
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+                        }
                     }
                 }else if(op3->type == IRItem::FLOAT){
                     irAsmVectorMap[irId].push_back("PUSH {r0, r1, ip}");
@@ -496,17 +515,37 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::NAME:{
                 int op1Id = funcIr->items[0]->iVal;
-                IRItem *op2 = funcIr->items[1];  // IVAR/FVAR/INT/FLOAT
+                IRItem *op2 = funcIr->items[1];
                 vector<int> tmpVarList({op1Id, });
                 vector<string> irAsmList;
                 allocater.allocateVar(irId, tmpVarList, irAsmList);
                 irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
                 if(op2->symbol->symbolType == Symbol::LOCAL_VAR){
-                    buffer << "SUB r" << allocater.getVarRegId(op1Id) << \
+                    int symbolStackOffset = symbolStackOffsetMap[op2->symbol] * 4;
+                    if(symbolStackOffset > 255 || symbolStackOffset < -255){
+                        buffer << "MOVW r" << allocater.getVarRegId(op1Id)
+                               << ", #:lower16:" << *((unsigned *)(&(symbolStackOffset)));
+                        irAsmVectorMap[irId].push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                        buffer << "MOVT r" << allocater.getVarRegId(op1Id)
+                               << ", #:upper16:" << *((unsigned *)(&(symbolStackOffset)));
+                        irAsmVectorMap[irId].push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+
+                        buffer << "SUB r" << allocater.getVarRegId(op1Id) << \
+                            ", ip, r" << allocater.getVarRegId(op1Id);
+                        irAsmVectorMap[irId].push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                    }else{
+                        buffer << "SUB r" << allocater.getVarRegId(op1Id) << \
                             ", ip, #" << symbolStackOffsetMap[op2->symbol] * 4;
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    buffer.clear();
-                    buffer.str("");
+                        irAsmVectorMap[irId].push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                    }
                 }else if(op2->symbol->symbolType == Symbol::PARAM){
                     buffer << "ADD r" << allocater.getVarRegId(op1Id) << \
                             ", ip, #";
