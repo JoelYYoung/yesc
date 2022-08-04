@@ -216,7 +216,9 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
         int irId = funcIr->irId;
         vector<IRItem *> defVarList = funcIr->getDefVar();
         vector<IRItem *> useVarList = funcIr->getUseVar();
-
+        if(irId == 76){
+            cout <<""<<endl;
+        }
         if(defVarList.size() != 0){
             int defVarId = defVarList[0]->iVal;
             if(tmpVarLiveInterval.find(defVarId) == tmpVarLiveInterval.end()){
@@ -246,6 +248,11 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
     //cout << "Start for" << endl;
     for(IR *funcIr : funcIR){
         int irId = funcIr->irId;
+
+        if(irId == 76){
+            cout <<""<<endl;
+        }
+
         //cout << "to irId " << irId << endl;
         irAsmVectorMap[irId] = vector<string>();
         switch(funcIr->type){
@@ -434,6 +441,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 }
                 vector<string> irAsmList;
                 allocater.allocateVar(irId, tmpVarList, irAsmList);
+                irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
                 if(op2->type == IRItem::IVAR || op2->type == IRItem::FVAR) {
                     buffer << "STR r" << allocater.getVarRegId(op1Id) << \
                             ", [r" << allocater.getVarRegId(op2->iVal) << "]";
