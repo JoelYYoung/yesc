@@ -993,11 +993,13 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::GOTO:{
                 int gotoIrId = funcIr->items[0]->iVal;
-                labelInsertSet.insert(gotoIrId);
-                buffer << "B " << funcSymbol->name << "_label" << gotoIrId;
-                irAsmVectorMap[irId].push_back(buffer.str());
-                buffer.clear();
-                buffer.str("");
+                if(gotoIrId < funcIR.size()){
+                    labelInsertSet.insert(gotoIrId);
+                    buffer << "B " << funcSymbol->name << "_label" << gotoIrId;
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                }
                 break;
             }
             case IR::BEQ:{
