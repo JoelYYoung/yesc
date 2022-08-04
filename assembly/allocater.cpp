@@ -63,11 +63,34 @@ void Allocater::allocateVar(int irId, vector<int> varIdList, vector<string> &ext
                     (*spillItor).second = tmpVarLiveInterval[varId].second;
                     string stackIncIntruction("SUB sp, sp, #4");
                     extraInstruction.push_back(stackIncIntruction);
-                    buffer << "STR r" << spillVarRegId << ", [ip, #-" << (tmpVarStackOffset+funcLocalVarSize)*4 << "]";
-                    string spillIntruction(buffer.str());
-                    extraInstruction.push_back(spillIntruction);
-                    buffer.clear();
-                    buffer.str("");
+
+                    int spillStackOffset = (tmpVarStackOffset+funcLocalVarSize)*4;
+                    if(spillStackOffset < 255){
+                        buffer << "STR r" << spillVarRegId << ", [ip, #-" << spillStackOffset << "]";
+                        string spillIntruction(buffer.str());
+                        extraInstruction.push_back(spillIntruction);
+                        buffer.clear();
+                        buffer.str("");
+                    }else{
+                        spillStackOffset = -spillStackOffset;
+                        buffer << "MOVW r11, #:lower16:"
+                               << *((unsigned *) (&(spillStackOffset)));
+                        extraInstruction.push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                        buffer << "MOVT r11, #:upper16:"
+                               << *((unsigned *) (&(spillStackOffset)));
+                        extraInstruction.push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+
+                        buffer << "STR r" << spillVarRegId << ", [ip, r11]";
+                        extraInstruction.push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                    }
+
+
                 }else{
                     int spillStackOffset = *freeStack.begin();
                     freeStack.erase(freeStack.begin());
@@ -75,11 +98,32 @@ void Allocater::allocateVar(int irId, vector<int> varIdList, vector<string> &ext
                     tmpVarLocationMap[varId] = pair<int, int> (0, spillVarRegId);
                     (*spillItor).first = varId;
                     (*spillItor).second = tmpVarLiveInterval[varId].second;
-                    buffer << "STR r" << spillVarRegId << ", [ip, #-" << (spillStackOffset+funcLocalVarSize)*4 << "]";
-                    string spillIntruction(buffer.str());
-                    extraInstruction.push_back(spillIntruction);
-                    buffer.clear();
-                    buffer.str("");
+
+                    int spillStackOffset_1 = (spillStackOffset+funcLocalVarSize)*4;
+                    if(spillStackOffset_1 < 255){
+                        buffer << "STR r" << spillVarRegId << ", [ip, #-" << spillStackOffset_1 << "]";
+                        string spillIntruction(buffer.str());
+                        extraInstruction.push_back(spillIntruction);
+                        buffer.clear();
+                        buffer.str("");
+                    }else{
+                        spillStackOffset_1 = -spillStackOffset_1;
+                        buffer << "MOVW r11, #:lower16:"
+                               << *((unsigned *) (&(spillStackOffset_1)));
+                        extraInstruction.push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                        buffer << "MOVT r11, #:upper16:"
+                               << *((unsigned *) (&(spillStackOffset_1)));
+                        extraInstruction.push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+
+                        buffer << "STR r" << spillVarRegId << ", [ip, r11]";
+                        extraInstruction.push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                    }
                 }
             }
 
@@ -96,11 +140,32 @@ void Allocater::allocateVar(int irId, vector<int> varIdList, vector<string> &ext
                     freeRegister.erase(freeRegister.begin());
                     usedRegister.insert(allocateRegId);
                     freeStack.insert(freeStackId);
-                    buffer << "LDR r" << allocateRegId << ", [ip, #-" << (freeStackId + funcLocalVarSize) * 4 << "]";
-                    string loadInstruction(buffer.str());
-                    extraInstruction.push_back(loadInstruction);
-                    buffer.clear();
-                    buffer.str("");
+
+                    int spillStackOffset_1 = (freeStackId + funcLocalVarSize) * 4;
+                    if(spillStackOffset_1 < 255){
+                        buffer << "LDR r" << allocateRegId << ", [ip, #-" << spillStackOffset_1 << "]";
+                        string loadInstruction(buffer.str());
+                        extraInstruction.push_back(loadInstruction);
+                        buffer.clear();
+                        buffer.str("");
+                    }else{
+                        spillStackOffset_1 = -spillStackOffset_1;
+                        buffer << "MOVW r11, #:lower16:"
+                               << *((unsigned *) (&(spillStackOffset_1)));
+                        extraInstruction.push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                        buffer << "MOVT r11, #:upper16:"
+                               << *((unsigned *) (&(spillStackOffset_1)));
+                        extraInstruction.push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+
+                        buffer << "LDR r" << allocateRegId << ", [ip, r11]";
+                        extraInstruction.push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                    }
                 }else{  // spill and allocate
                     auto spillItor = activeList.end() - 1;
                     while(true){
@@ -121,11 +186,34 @@ void Allocater::allocateVar(int irId, vector<int> varIdList, vector<string> &ext
                         (*spillItor).second = tmpVarLiveInterval[varId].second;
                         string stackIncIntruction("SUB sp, sp, #4");
                         extraInstruction.push_back(stackIncIntruction);
-                        buffer << "STR r" << spillVarRegId << ", [ip, #-" << (tmpVarStackOffset+funcLocalVarSize)*4 << "]";
-                        string spillIntruction(buffer.str());
-                        extraInstruction.push_back(spillIntruction);
-                        buffer.clear();
-                        buffer.str("");
+
+                        int spillStackOffset_1 = (tmpVarStackOffset+funcLocalVarSize)*4;
+                        if(spillStackOffset_1 < 255){
+                            buffer << "STR r" << spillVarRegId << ", [ip, #-" << spillStackOffset_1 << "]";
+                            string spillIntruction(buffer.str());
+                            extraInstruction.push_back(spillIntruction);
+                            buffer.clear();
+                            buffer.str("");
+                        }else{
+                            spillStackOffset_1 = -spillStackOffset_1;
+                            buffer << "MOVW r11, #:lower16:"
+                                   << *((unsigned *) (&(spillStackOffset_1)));
+                            extraInstruction.push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+                            buffer << "MOVT r11, #:upper16:"
+                                   << *((unsigned *) (&(spillStackOffset_1)));
+                            extraInstruction.push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+
+                            buffer << "STR r" << spillVarRegId << ", [ip, r11]";
+                            extraInstruction.push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+                        }
+
+
                     }else{
                         int spillStackOffset = *freeStack.begin();
                         freeStack.erase(freeStack.begin());
@@ -133,18 +221,62 @@ void Allocater::allocateVar(int irId, vector<int> varIdList, vector<string> &ext
                         tmpVarLocationMap[varId] = pair<int, int> (0, spillVarRegId);
                         (*spillItor).first = varId;
                         (*spillItor).second = tmpVarLiveInterval[varId].second;
-                        buffer << "STR r" << spillVarRegId << ", [ip, #-" << (spillStackOffset+funcLocalVarSize)*4 << "]";
-                        string spillIntruction(buffer.str());
-                        extraInstruction.push_back(spillIntruction);
+
+                        int spillStackOffset_1 = (spillStackOffset+funcLocalVarSize)*4;
+                        if(spillStackOffset_1 < 255){
+                            buffer << "STR r" << spillVarRegId << ", [ip, #-" << spillStackOffset_1 << "]";
+                            string spillIntruction(buffer.str());
+                            extraInstruction.push_back(spillIntruction);
+                            buffer.clear();
+                            buffer.str("");
+                        }else{
+                            spillStackOffset_1 = -spillStackOffset_1;
+                            buffer << "MOVW r11, #:lower16:"
+                                   << *((unsigned *) (&(spillStackOffset_1)));
+                            extraInstruction.push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+                            buffer << "MOVT r11, #:upper16:"
+                                   << *((unsigned *) (&(spillStackOffset_1)));
+                            extraInstruction.push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+
+                            buffer << "STR r" << spillVarRegId << ", [ip, r11]";
+                            extraInstruction.push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+                        }
+
+
+                    }
+                    freeStack.insert(freeStackId);
+
+                    int spillStackOffset_1 = (freeStackId + funcLocalVarSize) * 4;
+                    if(spillStackOffset_1 < 255){
+                        buffer << "LDR r" << spillVarRegId << ", [ip, #-" << spillStackOffset_1 << "]";
+                        string loadInstruction(buffer.str());
+                        extraInstruction.push_back(loadInstruction);
+                        buffer.clear();
+                        buffer.str("");
+                    }else{
+                        spillStackOffset_1 = -spillStackOffset_1;
+                        buffer << "MOVW r11, #:lower16:"
+                               << *((unsigned *) (&(spillStackOffset_1)));
+                        extraInstruction.push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                        buffer << "MOVT r11, #:upper16:"
+                               << *((unsigned *) (&(spillStackOffset_1)));
+                        extraInstruction.push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+
+                        buffer << "LDR r" << spillVarRegId << ", [ip, r11]";
+                        extraInstruction.push_back(buffer.str());
                         buffer.clear();
                         buffer.str("");
                     }
-                    freeStack.insert(freeStackId);
-                    buffer << "LDR r" << spillVarRegId << ", [ip, #-" << (freeStackId + funcLocalVarSize) * 4 << "]";
-                    string loadInstruction(buffer.str());
-                    extraInstruction.push_back(loadInstruction);
-                    buffer.clear();
-                    buffer.str("");
                 }
             }
         }
