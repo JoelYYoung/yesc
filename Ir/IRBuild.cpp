@@ -258,7 +258,7 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
                 ir.insert(ir.end(), expir.begin(), expir.end());
                 ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, d * 4)}));
                 varId++;
-                ir.push_back(new IR(IR::MUL, {new IRItem(IRItem::IVAR, varId), new IRItem(IRItem::IVAR, varId - 3), new IRItem(IRItem::IVAR, varId - 1)}));
+                ir.push_back(new IR(IR::MUL, {new IRItem(IRItem::IVAR, varId), new IRItem(IRItem::IVAR, expir.back()->items[0]->iVal), new IRItem(IRItem::IVAR, varId - 1)}));
                 varId++;
                 ir.push_back(new IR(IR::ADD, {new IRItem(IRItem::IVAR, varId), new IRItem(IRItem::IVAR, varId - 1), new IRItem(IRItem::IVAR, nowid)}));
                 nowid = varId;
