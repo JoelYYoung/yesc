@@ -186,11 +186,25 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
 
     // alloc stack space
     if(localDataSize != 0){
-        buffer << "SUB " << "sp, sp, #" << (localDataSize * 4);  // byte size
-        string localDataStackPrepare(buffer.str());  // INSTRUCTION
-        asmVector.push_back(localDataStackPrepare);
-        buffer.clear();
-        buffer.str("");
+        if(localDataSize > 255){
+            buffer << "MOVW r11, #:lower16:" << *((unsigned *)(&(localDataSize)));
+            asmVector.push_back(buffer.str());
+            buffer.clear();
+            buffer.str("");
+            buffer << "MOVT r11, #:upper16:" << *((unsigned *)(&(localDataSize)));
+            asmVector.push_back(buffer.str());
+            buffer.clear();
+            buffer.str("");
+
+            asmVector.push_back("SUB sp, sp, r11");
+        }else{
+            buffer << "SUB " << "sp, sp, #" << (localDataSize * 4);  // byte size
+            string localDataStackPrepare(buffer.str());  // INSTRUCTION
+            asmVector.push_back(localDataStackPrepare);
+            buffer.clear();
+            buffer.str("");
+        }
+
     }
 
     // register allocation
@@ -442,11 +456,32 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         }
 
                     }else if(op2->symbol->symbolType == Symbol::LOCAL_VAR){
-                        buffer << "STR r" << allocater.getVarRegId(op1Id) << \
+                        int symbolStackOffset = symbolStackOffsetMap[op2->symbol]*4;
+                        if(symbolStackOffset < 255){
+                            buffer << "STR r" << allocater.getVarRegId(op1Id) << \
                             ", [ip, #-" << symbolStackOffsetMap[op2->symbol]*4 << "]";
-                        irAsmVectorMap[irId].push_back(buffer.str());
-                        buffer.clear();
-                        buffer.str("");
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+                        }else{
+                            symbolStackOffset = -symbolStackOffset;
+                            buffer << "MOVW r11, #:lower16:"
+                                   << *((unsigned *) (&(symbolStackOffset)));
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+                            buffer << "MOVT r11, #:upper16:"
+                                   << *((unsigned *) (&(symbolStackOffset)));
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+
+                            buffer << "STR r" << allocater.getVarRegId(op1Id) << ", [ip, r11]";
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+                        }
+
                     }
                 }
 
@@ -486,11 +521,33 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         }
 
                     }else if(op2->symbol->symbolType == Symbol::LOCAL_VAR){
-                        buffer << "LDR r" << allocater.getVarRegId(op1Id) << \
-                            ", [ip, #-" << symbolStackOffsetMap[op2->symbol]*4 << "]";
-                        irAsmVectorMap[irId].push_back(buffer.str());
-                        buffer.clear();
-                        buffer.str("");
+                        int symbolStackOffset = symbolStackOffsetMap[op2->symbol]*4;
+                        if(symbolStackOffset < 255){
+                            buffer << "LDR r" << allocater.getVarRegId(op1Id) << \
+                            ", [ip, #-" << symbolStackOffset << "]";
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+                        }else{
+                            symbolStackOffset = -symbolStackOffset;
+                            buffer << "MOVW r11, #:lower16:"
+                                   << *((unsigned *) (&(symbolStackOffset)));
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+                            buffer << "MOVT r11, #:upper16:"
+                                   << *((unsigned *) (&(symbolStackOffset)));
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+
+                            buffer << "LDR r" << allocater.getVarRegId(op1Id) << \
+                            ", [ip, r11]";
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+                        }
+
                     }else if(op2->symbol->symbolType == Symbol::GLOBAL_VAR){
                         buffer << "MOVW r" << allocater.getVarRegId(op1Id) << \
                             ", #:lower16:" << op2->symbol->name;
@@ -503,12 +560,13 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
                         buffer.str("");
-//                        //if()
-//                        buffer << "LDR r" << allocater.getVarRegId(op1Id) << ", [r"
-//                               << allocater.getVarRegId(op1Id) << "]";
-//                        irAsmVectorMap[irId].push_back(buffer.str());
-//                        buffer.clear();
-//                        buffer.str("");
+//                        if(op2->symbol->dimensions.size() == 0){
+//                            buffer << "LDR r" << allocater.getVarRegId(op1Id) << ", [r"
+//                                   << allocater.getVarRegId(op1Id) << "]";
+//                            irAsmVectorMap[irId].push_back(buffer.str());
+//                            buffer.clear();
+//                            buffer.str("");
+//                        }
                     }
                 }
                 break;
@@ -547,12 +605,26 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.str("");
                     }
                 }else if(op2->symbol->symbolType == Symbol::PARAM){
-                    buffer << "ADD r" << allocater.getVarRegId(op1Id) << \
+                    if(funcParam.getRegOrStack(op2->symbol) == 0){
+                        buffer << "MOV r" << allocater.getVarRegId(op1Id) << \
+                            ", r" << funcParam.getLocationId(op2->symbol);
+                        irAsmVectorMap[irId].push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                    }else{
+                        buffer << "ADD r" << allocater.getVarRegId(op1Id) << \
                             ", ip, #";
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    backFillList.push_back(tuple<int, int, int, Symbol *>(0, irId, irAsmVectorMap[irId].size()-1, op2->symbol));
-                    buffer.clear();
-                    buffer.str("");
+                        irAsmVectorMap[irId].push_back(buffer.str());
+                        backFillList.push_back(tuple<int, int, int, Symbol *>(0, irId, irAsmVectorMap[irId].size()-1, op2->symbol));
+                        buffer.clear();
+                        buffer.str("");
+                        buffer << "LDR r" << allocater.getVarRegId(op1Id) << \
+                            ", [r" << allocater.getVarRegId(op1Id) << "]";
+                        irAsmVectorMap[irId].push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                    }
+
                 }
                 break;
             }
