@@ -217,7 +217,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
         vector<IRItem *> defVarList = funcIr->getDefVar();
         vector<IRItem *> useVarList = funcIr->getUseVar();
         if(irId == 76){
-            cout <<""<<endl;
+            //cout <<""<<endl;
         }
         if(defVarList.size() != 0){
             int defVarId = defVarList[0]->iVal;
@@ -250,7 +250,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
         int irId = funcIr->irId;
 
         if(irId == 76){
-            cout <<""<<endl;
+            //cout <<""<<endl;
         }
 
         //cout << "to irId " << irId << endl;
