@@ -178,7 +178,7 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
     int d = 1;
     int nameid = 0;
     int nowid = 0;
-    if (pn->nodes.size() != 0)
+    if (pn->symbol->dimensions.size() != 0)
     {
         isArray = true;
     }
@@ -191,13 +191,25 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
         if (pn->symbol->symbolType == Symbol::GLOBAL_VAR)
         {
             ir.push_back(new IR(IR::LDR, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::SYMBOL, pn->symbol)}));
-            //ir.push_back(new IR(IR::ADD, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::PC) ,new IRItem(IRItem::IVAR, v)}));
+            int lastId = varId;
+            if (!isArray)
+            {
+                if(pn->symbol->dataType == Symbol::INT)
+                    ir.push_back(new IR(IR::LDR, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::IVAR, lastId)}));
+                else if(pn->symbol->dataType == Symbol::FLOAT)
+                    ir.push_back(new IR(IR::LDR, {new IRItem(IRItem::FVAR, ++varId), new IRItem(IRItem::IVAR, lastId)}));
+            }
         }
         else{
             if (isArray)
                 ir.push_back(new IR(IR::NAME, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::SYMBOL, pn->symbol)}));
             else
-                ir.push_back(new IR(IR::LDR, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::SYMBOL, pn->symbol)}));
+            {
+                if(pn->symbol->dataType == Symbol::INT)
+                    ir.push_back(new IR(IR::LDR, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::SYMBOL, pn->symbol)}));
+                else if(pn->symbol->dataType == Symbol::FLOAT)
+                    ir.push_back(new IR(IR::LDR, {new IRItem(IRItem::FVAR, ++varId), new IRItem(IRItem::SYMBOL, pn->symbol)}));
+            }
         }
     }
     else
@@ -516,7 +528,21 @@ vector<IR *> IRBuild::parseFuncCall(parseNode *pn, Symbol *sym, Attribute * att)
     {
         vector<IR *> irFunc = parseTree(pn->nodes[i], sym, att);
         ir.insert(ir.end(), irFunc.begin(), irFunc.end());
-        itemList.push_back(new IRItem(irFunc.back()->items[0]->type, ir.back()->items[0]->iVal));
+        Symbol *param = pn->symbol->params[i];
+        if(pn->symbol->name!="putf")
+        {
+            Symbol *param = pn->symbol->params[i];
+            if (param->dimensions.size() != 0)
+            {
+                itemList.push_back(new IRItem(irFunc[irFunc.size() - 2]->items[0]->type, irFunc[irFunc.size() - 2]->items[0]->iVal));
+            }
+            else
+                itemList.push_back(new IRItem(ir.back()->items[0]->type, ir.back()->items[0]->iVal));
+        }
+        else
+        {
+            itemList.push_back(new IRItem(ir.back()->items[0]->type, ir.back()->items[0]->iVal));
+        }
     }
     IR *callIR = new IR(IR::CALL, {new IRItem(IRItem::SYMBOL, pn->symbol)});
     callIR->items.insert(callIR->items.end(), itemList.begin(), itemList.end());
