@@ -47,6 +47,7 @@ private:
   parseNode *parseUnaryExp();
   parseNode *parseWhileStmt(Symbol *);
   parseNode *parseFormat();
+  vector<int> arrayAnalyse();
 
 public:
   Analyse(vector<tokenInfo > &tokenList);
