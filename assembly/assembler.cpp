@@ -1086,7 +1086,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             case IR::GOTO:{
                 int gotoIrId = funcIr->items[0]->iVal;
                 //(*(funcIR.end()-1))->irId
-                if(gotoIrId <= funcIR.size()){
+                if(gotoIrId < funcIR.size()){
                     labelInsertSet.insert(gotoIrId);
                     buffer << "B " << funcSymbol->name << "_label" << gotoIrId;
                     irAsmVectorMap[irId].push_back(buffer.str());
