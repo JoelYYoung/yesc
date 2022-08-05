@@ -469,7 +469,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         int symbolStackOffset = symbolStackOffsetMap[op2->symbol]*4;
                         if(symbolStackOffset < 255){
                             buffer << "STR r" << allocater.getVarRegId(op1Id) << \
-                            ", [ip, #-" << symbolStackOffsetMap[op2->symbol]*4 << "]";
+                            ", [ip, #-" << symbolStackOffset << "]";
                             irAsmVectorMap[irId].push_back(buffer.str());
                             buffer.clear();
                             buffer.str("");
@@ -1924,6 +1924,57 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 break;
             }
             case IR::MEMSET_ZERO:{
+
+
+                IRItem *op1 = funcIr->items[0];
+
+                int symbolStackOffset = symbolStackOffsetMap[op1->symbol]*4;
+                if(symbolStackOffset < 255){
+                    buffer << "SUB r10, ip, #-" << symbolStackOffset << "]";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                }else{
+                    symbolStackOffset = -symbolStackOffset;
+                    buffer << "MOVW r11, #:lower16:"
+                           << *((unsigned *) (&(symbolStackOffset)));
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                    buffer << "MOVT r11, #:upper16:"
+                           << *((unsigned *) (&(symbolStackOffset)));
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+
+                    buffer << "SUB r10, ip, r11";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                }
+
+                int zeroSize = 1;
+                for(int dimSize : op1->symbol->dimensions){
+                    zeroSize *= dimSize;
+                }
+
+                buffer << "MOV r11, #0";
+                irAsmVectorMap[irId].push_back(buffer.str());
+                buffer.clear();
+                buffer.str("");
+
+                for(int i = 0; i < zeroSize; i++){
+                    buffer << "STR r11, [r10]";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                    buffer << "ADD r10, #4";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                }
+
+
                 break;
             }
             default :{
