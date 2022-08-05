@@ -1930,7 +1930,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
 
                 int symbolStackOffset = symbolStackOffsetMap[op1->symbol]*4;
                 if(symbolStackOffset < 255){
-                    buffer << "SUB r10, ip, #-" << symbolStackOffset;
+                    buffer << "SUB r10, ip, #" << symbolStackOffset;
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
