@@ -295,14 +295,10 @@ vector<parseNode *> Analyse::parseConstDef() {
     getNextToken(1);
     bool isArray = false;
     vector<int> dimensions;
-    while (tokenInfoList[head].getSym() == tokenType::LB) {
+    if(tokenInfoList[head].getSym() == tokenType::LB)
       isArray = true;
-      getNextToken(1);
-      parseNode *val = parseAddExp();
-      dimensions.push_back(val->iVal);
-      delete val;
-      getNextToken(1);
-    }
+    vector<int> arr = arrayAnalyse();
+    dimensions.insert(dimensions.end(), arr.begin(), arr.end());
     getNextToken(1);
     parseNode *val = parseInitVal();
     Symbol *symbol = nullptr;
@@ -531,32 +527,21 @@ Symbol *Analyse::parseFuncParam() {
   vector<int> dimensions;
   dimensions.push_back(-1);
   getNextToken(2);
-  while (tokenInfoList[head].getSym() == tokenType::LB) {
-    getNextToken(1);
-    parseNode *val = parseAddExp();
-    dimensions.push_back(val->iVal);
-    delete val;
-    getNextToken(1);
-  }
+  vector<int> arr = arrayAnalyse();
+  dimensions.insert(dimensions.end(), arr.begin(), arr.end());
   return new Symbol(Symbol::PARAM, type, name, dimensions);
 }
 
 vector<parseNode *> Analyse::parseGlobalVarDef() {
-  Symbol::DataType type =
-      tokenInfoList[head].getSym() == tokenType::INT ? Symbol::INT : Symbol::FLOAT;
+  Symbol::DataType type = tokenInfoList[head].getSym() == tokenType::INT ? Symbol::INT : Symbol::FLOAT;
   getNextToken(1);
   vector<parseNode *> consts;
   while (tokenInfoList[head].getSym() != tokenType::SEMICOLON) {
     string name = tokenInfoList[head].getName();
     getNextToken(1);
     vector<int> dimensions;
-    while (tokenInfoList[head].getSym() == tokenType::LB) {
-      getNextToken(1);
-      parseNode *val = parseAddExp();
-      dimensions.push_back(val->iVal);
-      delete val;
-      getNextToken(1);
-    }
+    vector<int> arr = arrayAnalyse();
+    dimensions.insert(dimensions.end(), arr.begin(), arr.end());
     Symbol *symbol = nullptr;
     if (tokenInfoList[head].getSym() == tokenType::ASSIGN) {
       getNextToken(1);
@@ -649,13 +634,7 @@ parseNode *Analyse::parseLAndExp() {
     delete items[0];
     delete items[1];
     items.erase(items.begin() + 1);
-    int isInt1 = cons.isInt1;
-    int isInt2 = cons.isInt2;
-    int intVal1 = cons.intVal1;
-    int intVal2 = cons.intVal2;
-    float floatVal1 = cons.floatVal1;
-    float floatVal2 = cons.floatVal2;
-    items[0] = new parseNode((isInt1 ? intVal1 : floatVal1) && (isInt2 ? intVal2 : floatVal2));
+    items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) && (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
   }
   parseNode *root = items[0];
   for (int i = 1; i < items.size(); i++)
@@ -816,28 +795,18 @@ parseNode *Analyse::parseRelExp() {
     delete items[0];
     delete items[1];
     items.erase(items.begin() + 1);
-    int isInt1 = cons.isInt1;
-    int isInt2 = cons.isInt2;
-    int intVal1 = cons.intVal1;
-    int intVal2 = cons.intVal2;
-    float floatVal1 = cons.floatVal1;
-    float floatVal2 = cons.floatVal2;
     switch (opList[0]) {
-    case parseNode::GE:
-      items[0] = new parseNode((isInt1 ? intVal1 : floatVal1) >=
-                         (isInt2 ? intVal2 : floatVal2));
-      break;
-    case parseNode::GT:
-      items[0] = new parseNode((isInt1 ? intVal1 : floatVal1) >
-                         (isInt2 ? intVal2 : floatVal2));
-      break;
     case parseNode::LE:
-      items[0] = new parseNode((isInt1 ? intVal1 : floatVal1) <=
-                         (isInt2 ? intVal2 : floatVal2));
+      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) <= (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
       break;
     case parseNode::LT:
-      items[0] = new parseNode((isInt1 ? intVal1 : floatVal1) <
-                         (isInt2 ? intVal2 : floatVal2));
+      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) < (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
+      break;
+    case parseNode::GE:
+      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) >= (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
+      break;
+    case parseNode::GT:
+      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) > (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
       break;
     default:
       break;
@@ -958,7 +927,13 @@ parseNode *Analyse::parseStmt(Symbol *func) {
 
 parseNode *Analyse::parseUnaryExp() {
   switch (tokenInfoList[head].getSym()) {
-  case tokenType::FLOATCONST: {
+  case tokenType::INTCONST:{
+    int iVal = tokenInfoList[head].getValue();
+    getNextToken(1);
+    return new parseNode(iVal);
+  } 
+  case tokenType::FLOATCONST:
+  {
     float fVal = tokenInfoList[head].fvalue;
     getNextToken(1);
     return new parseNode(fVal);
@@ -967,13 +942,7 @@ parseNode *Analyse::parseUnaryExp() {
     if (tokenInfoList[head + 1].getSym() == tokenType::LP)
       return parseFuncCall();
     return parseLVal();
-  case tokenType::INTCONST: {
-    int iVal = tokenInfoList[head].getValue();
-    getNextToken(1);
-    return new parseNode(iVal);
-  }
   case tokenType::LP: {
-    //cout << tokenInfoList[head+1].getName() << endl;
     getNextToken(1);
     parseNode *root = parseAddExp();
     getNextToken(1);
@@ -1053,13 +1022,8 @@ vector<parseNode *> Analyse::parseLocalVarDef() {
     string name = tokenInfoList[head].getName();
     getNextToken(1);
     vector<int> dimensions;
-    while (tokenInfoList[head].getSym() == tokenType::LB) {
-      getNextToken(1);
-      parseNode *val = parseAddExp();
-      dimensions.push_back(val->iVal);
-      delete val;
-      getNextToken(1);
-    }
+    vector<int> arr = arrayAnalyse();
+    dimensions.insert(dimensions.end(), arr.begin(), arr.end());
     Symbol *symbol = new Symbol(Symbol::LOCAL_VAR, type, name, dimensions);
     items.push_back(new parseNode(parseNode::LOCAL_VAR_DEF, false, symbol, {}));
     if (tokenInfoList[head].getSym() == tokenType::ASSIGN) {
@@ -1068,23 +1032,24 @@ vector<parseNode *> Analyse::parseLocalVarDef() {
       if (dimensions.empty()) {
         val = util->typeTrans(type, val);
         items.push_back(new parseNode(parseNode::ASSIGN_STMT, false, {new parseNode(parseNode::L_VAL, type == Symbol::FLOAT, symbol, {}), val}));
-        //cout << val->nodes[1]->symbol->name << endl;
       } else {
         items.push_back(new parseNode(parseNode::MEMSET_ZERO, false, symbol, {}));
         unordered_map<int, parseNode *> exps;
         allocInitVal(dimensions, exps, 0, val);
-        vector<pair<int, parseNode *>> orderedExps(exps.begin(), exps.end());
-        sort(orderedExps.begin(), orderedExps.end());
-        for (pair<int, parseNode *> exp : orderedExps) {
-          vector<parseNode *> dimensionparseNodes(dimensions.size());
-          int t = exp.first;
-          for (int j = dimensions.size() - 1; j >= 0; j--) {
-            dimensionparseNodes[j] = new parseNode(t % dimensions[j]);
-            t /= dimensions[j];
+        vector<pair<int, parseNode *>> arrayList(exps.begin(), exps.end());
+        sort(arrayList.begin(), arrayList.end());
+        for (pair<int, parseNode *> exp : arrayList) {
+          int size = exp.first;
+          vector<parseNode *> nodes;
+          for (int j = dimensions.size() - 1; j >= 0;j--)
+          {
+            nodes.push_back(new parseNode(size % dimensions[j]));
+            size /= dimensions[j];
           }
+          reverse(nodes.begin(), nodes.end());
           parseNode *expVal = exp.second;
           expVal = util->typeTrans(type, expVal);
-          items.push_back(new parseNode(parseNode::ASSIGN_STMT, false, {new parseNode(parseNode::L_VAL, type == Symbol::FLOAT, symbol, dimensionparseNodes), expVal}));
+          items.push_back(new parseNode(parseNode::ASSIGN_STMT, false, {new parseNode(parseNode::L_VAL, type == Symbol::FLOAT, symbol, nodes), expVal}));
         }
         deleteInitVal(val);
       }
@@ -1113,6 +1078,18 @@ parseNode *Analyse::parseWhileStmt(Symbol *func) {
   }
   else  stmt = parseStmt(func);
   return new parseNode(parseNode::WHILE_STMT, false, {cond, stmt});
+}
+
+vector<int> Analyse::arrayAnalyse() {
+  vector<int> dimension;
+  while (tokenInfoList[head].getSym() == tokenType::LB) {
+    getNextToken(1);
+    parseNode *node = parseAddExp();
+    dimension.push_back(node->iVal);
+    delete node;
+    getNextToken(1);
+  }
+  return dimension;
 }
 
 void Analyse::getNextToken(int num){
