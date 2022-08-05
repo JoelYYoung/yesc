@@ -649,13 +649,7 @@ parseNode *Analyse::parseLAndExp() {
     delete items[0];
     delete items[1];
     items.erase(items.begin() + 1);
-    int isInt1 = cons.isInt1;
-    int isInt2 = cons.isInt2;
-    int intVal1 = cons.intVal1;
-    int intVal2 = cons.intVal2;
-    float floatVal1 = cons.floatVal1;
-    float floatVal2 = cons.floatVal2;
-    items[0] = new parseNode((isInt1 ? intVal1 : floatVal1) && (isInt2 ? intVal2 : floatVal2));
+    items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) && (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
   }
   parseNode *root = items[0];
   for (int i = 1; i < items.size(); i++)
@@ -816,28 +810,18 @@ parseNode *Analyse::parseRelExp() {
     delete items[0];
     delete items[1];
     items.erase(items.begin() + 1);
-    int isInt1 = cons.isInt1;
-    int isInt2 = cons.isInt2;
-    int intVal1 = cons.intVal1;
-    int intVal2 = cons.intVal2;
-    float floatVal1 = cons.floatVal1;
-    float floatVal2 = cons.floatVal2;
     switch (opList[0]) {
-    case parseNode::GE:
-      items[0] = new parseNode((isInt1 ? intVal1 : floatVal1) >=
-                         (isInt2 ? intVal2 : floatVal2));
-      break;
-    case parseNode::GT:
-      items[0] = new parseNode((isInt1 ? intVal1 : floatVal1) >
-                         (isInt2 ? intVal2 : floatVal2));
-      break;
     case parseNode::LE:
-      items[0] = new parseNode((isInt1 ? intVal1 : floatVal1) <=
-                         (isInt2 ? intVal2 : floatVal2));
+      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) <= (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
       break;
     case parseNode::LT:
-      items[0] = new parseNode((isInt1 ? intVal1 : floatVal1) <
-                         (isInt2 ? intVal2 : floatVal2));
+      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) < (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
+      break;
+    case parseNode::GE:
+      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) >= (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
+      break;
+    case parseNode::GT:
+      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) > (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
       break;
     default:
       break;
@@ -958,7 +942,13 @@ parseNode *Analyse::parseStmt(Symbol *func) {
 
 parseNode *Analyse::parseUnaryExp() {
   switch (tokenInfoList[head].getSym()) {
-  case tokenType::FLOATCONST: {
+  case tokenType::INTCONST:{
+    int iVal = tokenInfoList[head].getValue();
+    getNextToken(1);
+    return new parseNode(iVal);
+  } 
+  case tokenType::FLOATCONST:
+  {
     float fVal = tokenInfoList[head].fvalue;
     getNextToken(1);
     return new parseNode(fVal);
@@ -967,13 +957,7 @@ parseNode *Analyse::parseUnaryExp() {
     if (tokenInfoList[head + 1].getSym() == tokenType::LP)
       return parseFuncCall();
     return parseLVal();
-  case tokenType::INTCONST: {
-    int iVal = tokenInfoList[head].getValue();
-    getNextToken(1);
-    return new parseNode(iVal);
-  }
   case tokenType::LP: {
-    //cout << tokenInfoList[head+1].getName() << endl;
     getNextToken(1);
     parseNode *root = parseAddExp();
     getNextToken(1);
@@ -1068,23 +1052,24 @@ vector<parseNode *> Analyse::parseLocalVarDef() {
       if (dimensions.empty()) {
         val = util->typeTrans(type, val);
         items.push_back(new parseNode(parseNode::ASSIGN_STMT, false, {new parseNode(parseNode::L_VAL, type == Symbol::FLOAT, symbol, {}), val}));
-        //cout << val->nodes[1]->symbol->name << endl;
       } else {
         items.push_back(new parseNode(parseNode::MEMSET_ZERO, false, symbol, {}));
         unordered_map<int, parseNode *> exps;
         allocInitVal(dimensions, exps, 0, val);
-        vector<pair<int, parseNode *>> orderedExps(exps.begin(), exps.end());
-        sort(orderedExps.begin(), orderedExps.end());
-        for (pair<int, parseNode *> exp : orderedExps) {
-          vector<parseNode *> dimensionparseNodes(dimensions.size());
-          int t = exp.first;
-          for (int j = dimensions.size() - 1; j >= 0; j--) {
-            dimensionparseNodes[j] = new parseNode(t % dimensions[j]);
-            t /= dimensions[j];
+        vector<pair<int, parseNode *>> arrayList(exps.begin(), exps.end());
+        sort(arrayList.begin(), arrayList.end());
+        for (pair<int, parseNode *> exp : arrayList) {
+          int size = exp.first;
+          vector<parseNode *> nodes;
+          for (int j = dimensions.size() - 1; j >= 0;j--)
+          {
+            nodes.push_back(new parseNode(size % dimensions[j]));
+            size /= dimensions[j];
           }
+          reverse(nodes.begin(), nodes.end());
           parseNode *expVal = exp.second;
           expVal = util->typeTrans(type, expVal);
-          items.push_back(new parseNode(parseNode::ASSIGN_STMT, false, {new parseNode(parseNode::L_VAL, type == Symbol::FLOAT, symbol, dimensionparseNodes), expVal}));
+          items.push_back(new parseNode(parseNode::ASSIGN_STMT, false, {new parseNode(parseNode::L_VAL, type == Symbol::FLOAT, symbol, nodes), expVal}));
         }
         deleteInitVal(val);
       }
