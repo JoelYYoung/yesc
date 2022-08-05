@@ -33,6 +33,7 @@ public:
     void prepareForCall(int paramNum, vector<string> &extraInstruction);
     // get position of variable
     int getVarRegId(int varId);
+    int getTmpVarStackOffset();
     set<int> getUsedRegister();
 };
 

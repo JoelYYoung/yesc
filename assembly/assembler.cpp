@@ -184,28 +184,6 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
 
     //cout << "get global Var done" << endl;
 
-    // alloc stack space
-    if(localDataSize != 0){
-        if(localDataSize > 255){
-            buffer << "MOVW r11, #:lower16:" << *((unsigned *)(&(localDataSize)));
-            asmVector.push_back(buffer.str());
-            buffer.clear();
-            buffer.str("");
-            buffer << "MOVT r11, #:upper16:" << *((unsigned *)(&(localDataSize)));
-            asmVector.push_back(buffer.str());
-            buffer.clear();
-            buffer.str("");
-
-            asmVector.push_back("SUB sp, sp, r11");
-        }else{
-            buffer << "SUB " << "sp, sp, #" << (localDataSize * 4);  // byte size
-            string localDataStackPrepare(buffer.str());  // INSTRUCTION
-            asmVector.push_back(localDataStackPrepare);
-            buffer.clear();
-            buffer.str("");
-        }
-
-    }
 
     // register allocation
     unordered_map<int, pair<int, int>> tmpVarLiveInterval;
@@ -2005,6 +1983,31 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
         irAsmVectorMap[labelInsertIr].insert(irAsmVectorMap[labelInsertIr].begin(), buffer.str());
         buffer.clear();
         buffer.str("");
+    }
+
+    int tmpVarStackSize = allocater.getTmpVarStackOffset();
+    int allocSize = localDataSize + tmpVarStackSize;
+    // alloc stack space
+    if(allocSize != 0){
+        if(allocSize > 255){
+            buffer << "MOVW r11, #:lower16:" << *((unsigned *)(&(allocSize)));
+            asmVector.push_back(buffer.str());
+            buffer.clear();
+            buffer.str("");
+            buffer << "MOVT r11, #:upper16:" << *((unsigned *)(&(allocSize)));
+            asmVector.push_back(buffer.str());
+            buffer.clear();
+            buffer.str("");
+
+            asmVector.push_back("SUB sp, sp, r11");
+        }else{
+            buffer << "SUB " << "sp, sp, #" << (allocSize * 4);  // byte size
+            string localDataStackPrepare(buffer.str());  // INSTRUCTION
+            asmVector.push_back(localDataStackPrepare);
+            buffer.clear();
+            buffer.str("");
+        }
+
     }
 
     // insert single ir asm vector to asmVector
