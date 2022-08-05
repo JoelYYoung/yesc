@@ -363,8 +363,8 @@ vector<IR*> IRBuild::parseAndExp(parseNode* pn,Symbol *sym,Attribute *att) {
 
 vector<IR*> IRBuild::parseAlgoExp(parseNode * pn, Symbol * sym,Attribute * att)
 {
-    vector<IR *> ir1 = parseTree(pn->nodes[1], sym, att);
-    vector<IR *> ir2 = parseTree(pn->nodes[0], sym, att);
+    vector<IR *> ir1 = parseTree(pn->nodes[0], sym, att);
+    vector<IR *> ir2 = parseTree(pn->nodes[1], sym, att);
     vector<IR *> ir;
     ir.insert(ir.end(), ir1.begin(), ir1.end());
     ir.insert(ir.end(), ir2.begin(), ir2.end());
@@ -392,7 +392,7 @@ vector<IR*> IRBuild::parseAlgoExp(parseNode * pn, Symbol * sym,Attribute * att)
     IRItem::IRItemType type1 = ir1.back()->items[0]->type;
     IRItem::IRItemType type2 = ir2.back()->items[0]->type;
     ++varId;
-    ir.push_back(new IR(type, {new IRItem(type1, varId), new IRItem(type2, ir2.back()->items[0]->iVal), new IRItem(type1, ir1.back()->items[0]->iVal)}));
+    ir.push_back(new IR(type, {new IRItem(type1, varId), new IRItem(type1, ir1.back()->items[0]->iVal), new IRItem(type2, ir2.back()->items[0]->iVal)}));
     return ir;
 }
 
@@ -416,35 +416,35 @@ vector<IR *> IRBuild::parseReturnStmt(parseNode *pn, Symbol *sym,Attribute * att
 
 vector<IR *> IRBuild::parseCmpExp(parseNode *pn, Symbol *sym,Attribute * att) {
     IR::IRType type;
-    vector<IR *> ir1 = parseTree(pn->nodes[1], sym, att);
-    vector<IR *> ir2 = parseTree(pn->nodes[0], sym, att);
+    vector<IR *> ir1 = parseTree(pn->nodes[0], sym, att);
+    vector<IR *> ir2 = parseTree(pn->nodes[1], sym, att);
     vector<IR *> ir;
     ir.insert(ir.end(), ir1.begin(), ir1.end());
     ir.insert(ir.end(), ir2.begin(), ir2.end());
     switch (pn->opType)
     {
-        case parseNode::EQ:
-            type = IR::EQ;
-            break;
-        case parseNode::GE:
-            type = IR::GE;
-            break;
-        case parseNode::GT:
-            type = IR::GT;
-            break;
-        case parseNode::LE:
-            type = IR::LE;
-            break;
-        case parseNode::LT:
-            type = IR::LT;
-            break;
-        case parseNode::NE:
-            type = IR::NE;
-            break;
-        default:
-            break;
+    case parseNode::EQ:
+        type = IR::EQ;
+        break;
+    case parseNode::GE:
+        type = IR::GE;
+        break;
+    case parseNode::GT:
+        type = IR::GT;
+        break;
+    case parseNode::LE:
+        type = IR::LE;
+        break;
+    case parseNode::LT:
+        type = IR::LT;
+        break;
+    case parseNode::NE:
+        type = IR::NE;
+        break;
+    default:
+        break;
     }
-    ir.push_back(new IR(type, {new IRItem(IRItem::IVAR, varId++), new IRItem(ir2.back()->items[0]->type, ir2.back()->items[0]->iVal), new IRItem(ir1.back()->items[0]->type, ir1.back()->items[0]->iVal)}));
+    ir.push_back(new IR(type, {new IRItem(IRItem::IVAR, varId++), new IRItem(ir1.back()->items[0]->type, ir1.back()->items[0]->iVal), new IRItem(ir2.back()->items[0]->type, ir2.back()->items[0]->iVal)}));
     return ir;
 }
 
