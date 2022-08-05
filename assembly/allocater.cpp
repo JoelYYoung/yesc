@@ -61,8 +61,8 @@ void Allocater::allocateVar(int irId, vector<int> varIdList, vector<string> &ext
                     tmpVarLocationMap[varId] = pair<int, int> (0, spillVarRegId);
                     (*spillItor).first = varId;
                     (*spillItor).second = tmpVarLiveInterval[varId].second;
-                    string stackIncIntruction("SUB sp, sp, #4");
-                    extraInstruction.push_back(stackIncIntruction);
+//                    string stackIncIntruction("SUB sp, sp, #4");
+//                    extraInstruction.push_back(stackIncIntruction);
 
                     int spillStackOffset = (tmpVarStackOffset+funcLocalVarSize)*4;
                     if(spillStackOffset < 255){
@@ -184,8 +184,8 @@ void Allocater::allocateVar(int irId, vector<int> varIdList, vector<string> &ext
                         tmpVarLocationMap[varId] = pair<int, int> (0, spillVarRegId);
                         (*spillItor).first = varId;
                         (*spillItor).second = tmpVarLiveInterval[varId].second;
-                        string stackIncIntruction("SUB sp, sp, #4");
-                        extraInstruction.push_back(stackIncIntruction);
+//                        string stackIncIntruction("SUB sp, sp, #4");
+//                        extraInstruction.push_back(stackIncIntruction);
 
                         int spillStackOffset_1 = (tmpVarStackOffset+funcLocalVarSize)*4;
                         if(spillStackOffset_1 < 255){
@@ -304,11 +304,15 @@ void Allocater::prepareForCall(int paramNum, vector<string> &extraInstruction) {
             tmpVarStackOffset += 1;
             freeStack.insert(tmpVarStackOffset);
         }
-        buffer << "SUB sp, sp, #" << incNum * 4;
-        string stackIncInstruction(buffer.str());
-        extraInstruction.push_back(stackIncInstruction);
+//        buffer << "SUB sp, sp, #" << incNum * 4;
+//        string stackIncInstruction(buffer.str());
+//        extraInstruction.push_back(stackIncInstruction);
         buffer.clear();
         buffer.str("");
     }
     return;
+}
+
+int Allocater::getTmpVarStackOffset() {
+    return tmpVarStackOffset;
 }
