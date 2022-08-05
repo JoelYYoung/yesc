@@ -295,14 +295,10 @@ vector<parseNode *> Analyse::parseConstDef() {
     getNextToken(1);
     bool isArray = false;
     vector<int> dimensions;
-    while (tokenInfoList[head].getSym() == tokenType::LB) {
+    if(tokenInfoList[head].getSym() == tokenType::LB)
       isArray = true;
-      getNextToken(1);
-      parseNode *val = parseAddExp();
-      dimensions.push_back(val->iVal);
-      delete val;
-      getNextToken(1);
-    }
+    vector<int> arr = arrayAnalyse();
+    dimensions.insert(dimensions.end(), arr.begin(), arr.end());
     getNextToken(1);
     parseNode *val = parseInitVal();
     Symbol *symbol = nullptr;
@@ -531,32 +527,21 @@ Symbol *Analyse::parseFuncParam() {
   vector<int> dimensions;
   dimensions.push_back(-1);
   getNextToken(2);
-  while (tokenInfoList[head].getSym() == tokenType::LB) {
-    getNextToken(1);
-    parseNode *val = parseAddExp();
-    dimensions.push_back(val->iVal);
-    delete val;
-    getNextToken(1);
-  }
+  vector<int> arr = arrayAnalyse();
+  dimensions.insert(dimensions.end(), arr.begin(), arr.end());
   return new Symbol(Symbol::PARAM, type, name, dimensions);
 }
 
 vector<parseNode *> Analyse::parseGlobalVarDef() {
-  Symbol::DataType type =
-      tokenInfoList[head].getSym() == tokenType::INT ? Symbol::INT : Symbol::FLOAT;
+  Symbol::DataType type = tokenInfoList[head].getSym() == tokenType::INT ? Symbol::INT : Symbol::FLOAT;
   getNextToken(1);
   vector<parseNode *> consts;
   while (tokenInfoList[head].getSym() != tokenType::SEMICOLON) {
     string name = tokenInfoList[head].getName();
     getNextToken(1);
     vector<int> dimensions;
-    while (tokenInfoList[head].getSym() == tokenType::LB) {
-      getNextToken(1);
-      parseNode *val = parseAddExp();
-      dimensions.push_back(val->iVal);
-      delete val;
-      getNextToken(1);
-    }
+    vector<int> arr = arrayAnalyse();
+    dimensions.insert(dimensions.end(), arr.begin(), arr.end());
     Symbol *symbol = nullptr;
     if (tokenInfoList[head].getSym() == tokenType::ASSIGN) {
       getNextToken(1);
@@ -1037,13 +1022,8 @@ vector<parseNode *> Analyse::parseLocalVarDef() {
     string name = tokenInfoList[head].getName();
     getNextToken(1);
     vector<int> dimensions;
-    while (tokenInfoList[head].getSym() == tokenType::LB) {
-      getNextToken(1);
-      parseNode *val = parseAddExp();
-      dimensions.push_back(val->iVal);
-      delete val;
-      getNextToken(1);
-    }
+    vector<int> arr = arrayAnalyse();
+    dimensions.insert(dimensions.end(), arr.begin(), arr.end());
     Symbol *symbol = new Symbol(Symbol::LOCAL_VAR, type, name, dimensions);
     items.push_back(new parseNode(parseNode::LOCAL_VAR_DEF, false, symbol, {}));
     if (tokenInfoList[head].getSym() == tokenType::ASSIGN) {
@@ -1098,6 +1078,18 @@ parseNode *Analyse::parseWhileStmt(Symbol *func) {
   }
   else  stmt = parseStmt(func);
   return new parseNode(parseNode::WHILE_STMT, false, {cond, stmt});
+}
+
+vector<int> Analyse::arrayAnalyse() {
+  vector<int> dimension;
+  while (tokenInfoList[head].getSym() == tokenType::LB) {
+    getNextToken(1);
+    parseNode *node = parseAddExp();
+    dimension.push_back(node->iVal);
+    delete node;
+    getNextToken(1);
+  }
+  return dimension;
 }
 
 void Analyse::getNextToken(int num){
