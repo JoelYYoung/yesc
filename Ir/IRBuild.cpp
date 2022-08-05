@@ -309,13 +309,13 @@ vector<IR*> IRBuild::parseOrExp(parseNode* pn,Symbol *sym,Attribute *att) {
     vector<IR *> ir;
     ir.insert(ir.end(), ir1.begin(), ir1.end());
     int t1 = ir1.back()->items[0]->iVal;
+    ir1[0]->deleteIr(irtest.size());
     ir.push_back(
             new IR(IR::BNE, {new IRItem(IRItem::IR_ID, ir1.back()->irId + 1 + (int)irtest.size() + 3),
                              new IRItem(ir1.back()->items[0]->type, t1),
                              ir1.back()->items[0]->type == IRItem::IVAR
                              ? new IRItem(IRItem::INT, 0)
                              : new IRItem(IRItem::FLOAT, 0)}));
-    ir1[0]->deleteIr(irtest.size());
     vector<IR *> ir2 = parseTree(pn->nodes[1], sym, att);
     int t2 = ir2.back()->items[0]->iVal;
     ir.insert(ir.end(), ir2.begin(), ir2.end());
