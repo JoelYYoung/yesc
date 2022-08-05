@@ -1844,7 +1844,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                     irAsmVectorMap[irId].push_back("BL __aeabi_idivmod");
-                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
+                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r1";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
@@ -1861,7 +1861,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                     irAsmVectorMap[irId].push_back("BL __aeabi_idivmod");
-                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
+                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r1";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
