@@ -1957,8 +1957,8 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
     }
 
     // insert single ir asm vector to asmVector
-    for(int i = 0; i < funcIR.size(); i++){
-        int irId = i + funcIR[0]->irId;
+    for(IR *ir : funcIR){
+        int irId =  ir->irId;
         asmVector.insert(asmVector.end(), irAsmVectorMap[irId].begin(), irAsmVectorMap[irId].end());
     }
 
