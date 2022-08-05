@@ -347,7 +347,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    if(*((unsigned *)(&(op3->fVal))) < 65535){
+                    if(*((unsigned *)(&(op3->fVal))) < 255){
                         buffer << "MOV r1, #" << *((unsigned *)(&(op3->fVal)));
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
@@ -392,7 +392,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.str("");
                 }else if(op2->type == IRItem::INT || op2->type == IRItem::FVAR){
                     if(op2->type == IRItem::INT){
-                        if(*((unsigned *) (&(op2->iVal))) > 65535){
+                        if(*((unsigned *) (&(op2->iVal))) > 255){
                             buffer << "MOVW r" << allocater.getVarRegId(op1Id)  << ", #:lower16:" << *((unsigned *) (&(op2->iVal)));
                             irAsmVectorMap[irId].push_back(buffer.str());
                             buffer.clear();
@@ -408,7 +408,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                             buffer.str("");
                         }
                     }else if(op2->type == IRItem::FLOAT){
-                        if(*((unsigned *) (&(op2->fVal))) > 65535) {
+                        if(*((unsigned *) (&(op2->fVal))) > 255) {
                             buffer << "MOVW r" << allocater.getVarRegId(op1Id) << ", #:lower16:"
                                    << *((unsigned *) (&(op2->fVal)));
                             irAsmVectorMap[irId].push_back(buffer.str());
@@ -833,7 +833,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    if(*((unsigned *)(&(op3->fVal))) < 65535){
+                    if(*((unsigned *)(&(op3->fVal))) < 255){
                         buffer << "MOV r1, #" << *((unsigned *)(&(op3->fVal)));
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
@@ -934,7 +934,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    if(*((unsigned *)(&(op3->fVal))) < 65535){
+                    if(*((unsigned *)(&(op3->fVal))) < 255){
                         buffer << "MOV r1, #" << *((unsigned *)(&(op3->fVal)));
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
@@ -1011,7 +1011,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    if(*((unsigned *)(&(op3->fVal))) < 65535){
+                    if(*((unsigned *)(&(op3->fVal))) < 255){
                         buffer << "MOV r1, #" << *((unsigned *)(&(op3->fVal)));
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
@@ -1322,7 +1322,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }else if(op3->type == IRItem::FLOAT){
-                        if(*((unsigned *) (&(op3->fVal))) > 65535) {
+                        if(*((unsigned *) (&(op3->fVal))) > 255) {
                             buffer << "MOVW r1, #:lower16:" << *((unsigned *) (&(op3->fVal)));
                             irAsmVectorMap[irId].push_back(buffer.str());
                             buffer.clear();
@@ -1407,7 +1407,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }else if(op3->type == IRItem::FLOAT){
-                        if(*((unsigned *) (&(op3->fVal))) > 65535) {
+                        if(*((unsigned *) (&(op3->fVal))) > 255) {
                             buffer << "MOVW r1, #:lower16:" << *((unsigned *) (&(op3->fVal)));
                             irAsmVectorMap[irId].push_back(buffer.str());
                             buffer.clear();
@@ -1492,7 +1492,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }else if(op3->type == IRItem::FLOAT){
-                        if(*((unsigned *) (&(op3->fVal))) > 65535) {
+                        if(*((unsigned *) (&(op3->fVal))) > 255) {
                             buffer << "MOVW r1, #:lower16:" << *((unsigned *) (&(op3->fVal)));
                             irAsmVectorMap[irId].push_back(buffer.str());
                             buffer.clear();
@@ -1579,7 +1579,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }else if(op3->type == IRItem::FLOAT){
-                        if(*((unsigned *) (&(op3->fVal))) > 65535) {
+                        if(*((unsigned *) (&(op3->fVal))) > 255) {
                             buffer << "MOVW r1, #:lower16:" << *((unsigned *) (&(op3->fVal)));
                             irAsmVectorMap[irId].push_back(buffer.str());
                             buffer.clear();
@@ -1666,7 +1666,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }else if(op3->type == IRItem::FLOAT){
-                        if(*((unsigned *) (&(op3->fVal))) > 65535) {
+                        if(*((unsigned *) (&(op3->fVal))) > 255) {
                             buffer << "MOVW r1, #:lower16:" << *((unsigned *) (&(op3->fVal)));
                             irAsmVectorMap[irId].push_back(buffer.str());
                             buffer.clear();
@@ -1754,7 +1754,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }else if(op3->type == IRItem::FLOAT){
-                        if(*((unsigned *) (&(op3->fVal))) > 65535) {
+                        if(*((unsigned *) (&(op3->fVal))) > 255) {
                             buffer << "MOVW r1, #:lower16:" << *((unsigned *) (&(op3->fVal)));
                             irAsmVectorMap[irId].push_back(buffer.str());
                             buffer.clear();
