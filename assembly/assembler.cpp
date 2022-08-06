@@ -221,6 +221,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
     unordered_map<int, vector<string>> irAsmVectorMap;  // from ir to asm vector
     Parameter funcParam = funcParamMap[funcSymbol];
     vector<tuple<int, int, int, Symbol *>> backFillList;  // list to be back filled, first 1 need "]", second irId, third offset
+    vector<int> returnIRList;  // list of all return
     unordered_set<int> labelInsertSet;
     bool useLR = false;
     //cout << "Start for" << endl;
@@ -631,6 +632,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 }else{
                     irAsmVectorMap[irId].push_back(string("BX lr"));
                 }
+                returnIRList.push_back(funcIr->irId);
                 break;
             }
             case IR::CALL:{
@@ -1968,6 +1970,29 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
         buffer.str("");
     }
 
+    //insert recovering code for RETURN IR
+    for(int returnIrId : returnIRList){
+            buffer << "MOV sp, ip";
+            irAsmVectorMap[returnIrId].insert(irAsmVectorMap[returnIrId].end() - 1, buffer.str());
+            buffer.clear();
+            buffer.str("");
+        if(useLR || usedRegister.size() != 0){
+            buffer <<  "POP {";
+            for(int saveRegId : usedRegister){
+                buffer << "r" << saveRegId << ",";
+            }
+            if(useLR){
+                buffer << "lr,";
+            }
+            string recoveringAsm = buffer.str();
+            buffer.clear();
+            buffer.str("");
+            *(recoveringAsm.end()-1) = '}';
+            irAsmVectorMap[returnIrId].insert(irAsmVectorMap[returnIrId].end() - 1, recoveringAsm);
+        }
+    }
+
+
     int tmpVarStackSize = allocater.getTmpVarStackOffset();
     int allocSize = localDataSize + tmpVarStackSize;
     // alloc stack space
@@ -2018,26 +2043,6 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
     }
 
     asmVector.insert(asmVector.begin() + firstAsmIndex + offsetFlag, "MOV ip, sp");
-
-    if(useLR || usedRegister.size() != 0){
-        buffer << "MOV sp, ip";
-        asmVector.insert(asmVector.end() - 1, buffer.str());
-        buffer.clear();
-        buffer.str("");
-
-        buffer <<  "POP {";
-        for(int saveRegId : usedRegister){
-            buffer << "r" << saveRegId << ",";
-        }
-        if(useLR){
-            buffer << "lr,";
-        }
-        string recoveringAsm = buffer.str();
-        buffer.clear();
-        buffer.str("");
-        *(recoveringAsm.end()-1) = '}';
-        asmVector.insert(asmVector.end() - 1, recoveringAsm);
-    }
 }
 
 void Assembler::generateFunctionAsm() {
