@@ -277,7 +277,7 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
             ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, offset * 4)}));
             ir.push_back(new IR(IR::MUL, {new IRItem(IRItem::IVAR, varId-1), new IRItem(IRItem::IVAR, varId-1), new IRItem(IRItem::IVAR, varId)}));
         }
-        ir.push_back(new IR(IR::ARR, {new IRItem(IRItem::IVAR, nameid), new IRItem(IRItem::IVAR, varId)}));
+        ir.push_back(new IR(IR::ARR, {new IRItem(IRItem::IVAR, nameid), new IRItem(IRItem::IVAR, varId - 1)}));
         if(pn->symbol->dataType == Symbol::INT)
             ir.push_back(new IR(IR::LDR, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::IVAR, nameid)}));
         else if(pn->symbol->dataType == Symbol::FLOAT)
