@@ -275,7 +275,7 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
             {
                 offset *= pn->symbol->dimensions[i];
             }
-            ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, offset * 4)}));
+            ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, offset)}));
             ir.push_back(new IR(IR::MUL, {new IRItem(IRItem::IVAR, varId-1), new IRItem(IRItem::IVAR, varId-1), new IRItem(IRItem::IVAR, varId)}));
             newid = varId - 1;
         }
