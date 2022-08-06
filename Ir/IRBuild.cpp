@@ -311,7 +311,7 @@ vector<IR*> IRBuild::parseOrExp(parseNode* pn,Symbol *sym,Attribute *att) {
     int t1 = ir1.back()->items[0]->iVal;
     ir1[0]->deleteIr(irtest.size());
     ir.push_back(
-            new IR(IR::BNE, {new IRItem(IRItem::IR_ID, ir1.back()->irId + 1 + (int)irtest.size() + 2),
+            new IR(IR::BNE, {new IRItem(IRItem::IR_ID, ir1.back()->irId + 1 + (int)irtest.size() + 4),
                              new IRItem(ir1.back()->items[0]->type, t1),
                              ir1.back()->items[0]->type == IRItem::IVAR
                              ? new IRItem(IRItem::INT, 0)
