@@ -45,3 +45,11 @@ parseNode* Util::typeTrans(Symbol::DataType type, parseNode* pn)
         pn = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {pn});
     return pn;
 }
+
+void Util::expTypeTrans(parseNode* lnode, parseNode* rnode)
+{
+    if (!lnode->isFloat && rnode->isFloat)
+        lnode = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {lnode});
+    if (lnode->isFloat && !rnode->isFloat)
+        rnode = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {rnode});
+}

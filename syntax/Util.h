@@ -15,6 +15,7 @@ public:
     Constant deleteConst(vector<parseNode *>);
     bool judgeItem(vector<parseNode *>);
     parseNode *typeTrans(Symbol::DataType, parseNode *pn);
+    void expTypeTrans(parseNode *, parseNode *);
     Util();
     ~Util();
 };
