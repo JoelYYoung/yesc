@@ -212,11 +212,12 @@ parseNode *Analyse::parseAddExp() {
     for (int i = 0; i < opList.size(); i++) {
       parseNode *left = root;
       parseNode *right = items[i + 1];
-   /*   if (!left->isFloat && right->isFloat)
+      /*
+      if (!left->isFloat && right->isFloat)
         left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
       if (left->isFloat && !right->isFloat)
-        right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right}); */
-      expTypeTrans(left,right);
+        right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});*/
+      util->expTypeTrans(left, right);
       right = new parseNode(parseNode::BINARY_EXP, left->isFloat, parseNode::MUL, {right, left->isFloat ? new parseNode((float)multisize) : new parseNode(multisize)});
       root = new parseNode(parseNode::BINARY_EXP, left->isFloat, opList[i], {left, right});
     }
@@ -224,7 +225,7 @@ parseNode *Analyse::parseAddExp() {
     for (int i = 0; i < opList.size(); i++) {
       parseNode *left = root;
       parseNode *right = items[i + 1];
-/*
+      /*
       if (!left->isFloat && right->isFloat)
       {
         left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
@@ -233,8 +234,10 @@ parseNode *Analyse::parseAddExp() {
       {
         right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});
       }*/
-      expTypeTrans(left,right);
-      root = new parseNode(parseNode::BINARY_EXP, left->isFloat, opList[i], {left, right});  }
+      util->expTypeTrans(left, right);
+      root = new parseNode(parseNode::BINARY_EXP, left->isFloat, opList[i], {left, right});
+    }
+  }
   return root;
 }
 
@@ -406,32 +409,38 @@ parseNode *Analyse::parseEqExp() {
     delete items[0];
     delete items[1];
     items.erase(items.begin() + 1);
-    int isInt1 = cons.isInt1;
-    int isInt2 = cons.isInt2;
-    int intVal1 = cons.intVal1;
-    int intVal2 = cons.intVal2;
-    float floatVal1 = cons.floatVal1;
-    float floatVal2 = cons.floatVal2;
-    items[0] =
-        opList[0] == parseNode::EQ
-            ? (isInt1 && isInt2 ? new parseNode(intVal1 == intVal2)
-                                : new parseNode((isInt1 ? intVal1 : floatVal1) ==
-                                          (isInt2 ? intVal2 : floatVal2)))
-            : (isInt1 && isInt2 ? new parseNode(intVal1 != intVal2)
-                                : new parseNode((isInt1 ? intVal1 : floatVal1) !=
-                                          (isInt2 ? intVal2 : floatVal2)));
+    if(opList[0] == parseNode::EQ)
+    {
+      if(cons.isInt1&&cons.isInt2)
+      {
+        items[0] = new parseNode(cons.intVal1 == cons.intVal2);
+      }
+      else{
+        items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) == (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
+      }
+    }
+    else if(opList[0] == parseNode::NE)
+    {
+      if(cons.isInt1&&cons.isInt2)
+      {
+        items[0] = new parseNode(cons.intVal1 != cons.intVal2);
+      }
+      else{
+        items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) != (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
+      }
+    }
     opList.erase(opList.begin());
   }
   parseNode *root = items[0];
   for (int i = 0; i < opList.size(); i++) {
     parseNode *left = root;
     parseNode *right = items[i + 1];
-/*
+    /*
     if (!left->isFloat && right->isFloat)
       left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
     if (left->isFloat && !right->isFloat)
-      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right}); */
-    expTypeTrans(left,right);
+      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});*/
+    util->expTypeTrans(left, right);
     root = new parseNode(parseNode::BINARY_EXP, false, opList[i], {left, right});
   }
   return root;
@@ -454,7 +463,6 @@ parseNode *Analyse::parseFuncCall() {
     getNextToken(2);
     while(tokenInfoList[head].getSym() != tokenType::RP) {
       parseNode *param = parseAddExp();
-      //param = util->typeTrans(symbol->params[params.size()]->dataType, param);
       params.push_back(param);
       if (tokenInfoList[head].getSym() == tokenType::RP)
         break;
@@ -737,14 +745,14 @@ parseNode *Analyse::parseMulExp() {
     float floatVal1 = cons.floatVal1;
     float floatVal2 = cons.floatVal2;
     switch (opList[0]) {
+    case parseNode::MUL:
+      items[0] = isInt1 && isInt2 ? new parseNode(intVal1 * intVal2) : new parseNode((isInt1 ? intVal1 : floatVal1) * (isInt2 ? intVal2 : floatVal2));
+      break;
     case parseNode::DIV:
       items[0] = isInt1 && isInt2 ? new parseNode(intVal1 / intVal2) : new parseNode((isInt1 ? intVal1 : floatVal1) / (isInt2 ? intVal2 : floatVal2));
       break;
     case parseNode::MOD:
       items[0] = new parseNode(intVal1 % intVal2);
-      break;
-    case parseNode::MUL:
-      items[0] = isInt1 && isInt2 ? new parseNode(intVal1 * intVal2) : new parseNode((isInt1 ? intVal1 : floatVal1) * (isInt2 ? intVal2 : floatVal2));
       break;
     default:
       break;
@@ -755,14 +763,14 @@ parseNode *Analyse::parseMulExp() {
   for (int i = 0; i < opList.size(); i++) {
     parseNode *left = root;
     parseNode *right = items[i + 1];
-/*
+    /*
     if (!left->isFloat && right->isFloat)
     {
       left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
     }
     if (left->isFloat && !right->isFloat)
-      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right}); */
-    expTypeTrans(left,right);
+      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});*/
+    util->expTypeTrans(left, right);
     root = new parseNode(parseNode::BINARY_EXP, left->isFloat, opList[i], {left, right});
   }
   return root;
@@ -822,12 +830,12 @@ parseNode *Analyse::parseRelExp() {
   for (int i = 0; i < opList.size(); i++) {
     parseNode *left = root;
     parseNode *right = items[i + 1];
-/*
+    /*
     if (!left->isFloat && right->isFloat)
       left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
     if (left->isFloat && !right->isFloat)
-      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right}); */
-    expTypeTrans(left,right);
+      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});*/
+    util->expTypeTrans(left, right);
     root = new parseNode(parseNode::BINARY_EXP, false, opList[i], {left, right});
   }
   return root;
