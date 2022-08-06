@@ -1967,7 +1967,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
     for(tuple<int, int, int, Symbol *> backFillInfo : backFillList){
         string initialAsm(irAsmVectorMap[get<1>(backFillInfo)][get<2>(backFillInfo)]);
         buffer << (usedRegister.size() +
-                   funcParam.getLocationId(get<3>(backFillInfo)))*4;
+                   funcParam.getLocationId(get<3>(backFillInfo)) + useLR)*4;
         if(get<0>(backFillInfo) == 1) {  // need "]"
             buffer << "]";
         }
