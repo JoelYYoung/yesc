@@ -212,10 +212,11 @@ parseNode *Analyse::parseAddExp() {
     for (int i = 0; i < opList.size(); i++) {
       parseNode *left = root;
       parseNode *right = items[i + 1];
-      if (!left->isFloat && right->isFloat)
+   /*   if (!left->isFloat && right->isFloat)
         left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
       if (left->isFloat && !right->isFloat)
-        right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});
+        right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right}); */
+      expTypeTrans(left,right);
       right = new parseNode(parseNode::BINARY_EXP, left->isFloat, parseNode::MUL, {right, left->isFloat ? new parseNode((float)multisize) : new parseNode(multisize)});
       root = new parseNode(parseNode::BINARY_EXP, left->isFloat, opList[i], {left, right});
     }
@@ -223,6 +224,7 @@ parseNode *Analyse::parseAddExp() {
     for (int i = 0; i < opList.size(); i++) {
       parseNode *left = root;
       parseNode *right = items[i + 1];
+/*
       if (!left->isFloat && right->isFloat)
       {
         left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
@@ -230,10 +232,9 @@ parseNode *Analyse::parseAddExp() {
       if (left->isFloat && !right->isFloat)
       {
         right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});
-      }
-      root = new parseNode(parseNode::BINARY_EXP, left->isFloat, opList[i], {left, right});
-    }
-  }
+      }*/
+      expTypeTrans(left,right);
+      root = new parseNode(parseNode::BINARY_EXP, left->isFloat, opList[i], {left, right});  }
   return root;
 }
 
@@ -425,10 +426,12 @@ parseNode *Analyse::parseEqExp() {
   for (int i = 0; i < opList.size(); i++) {
     parseNode *left = root;
     parseNode *right = items[i + 1];
+/*
     if (!left->isFloat && right->isFloat)
       left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
     if (left->isFloat && !right->isFloat)
-      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});
+      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right}); */
+    expTypeTrans(left,right);
     root = new parseNode(parseNode::BINARY_EXP, false, opList[i], {left, right});
   }
   return root;
@@ -752,12 +755,14 @@ parseNode *Analyse::parseMulExp() {
   for (int i = 0; i < opList.size(); i++) {
     parseNode *left = root;
     parseNode *right = items[i + 1];
+/*
     if (!left->isFloat && right->isFloat)
     {
       left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
     }
     if (left->isFloat && !right->isFloat)
-      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});
+      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right}); */
+    expTypeTrans(left,right);
     root = new parseNode(parseNode::BINARY_EXP, left->isFloat, opList[i], {left, right});
   }
   return root;
@@ -817,10 +822,12 @@ parseNode *Analyse::parseRelExp() {
   for (int i = 0; i < opList.size(); i++) {
     parseNode *left = root;
     parseNode *right = items[i + 1];
+/*
     if (!left->isFloat && right->isFloat)
       left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
     if (left->isFloat && !right->isFloat)
-      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});
+      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right}); */
+    expTypeTrans(left,right);
     root = new parseNode(parseNode::BINARY_EXP, false, opList[i], {left, right});
   }
   return root;
