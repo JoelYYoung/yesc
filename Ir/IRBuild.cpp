@@ -268,6 +268,15 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
         //cout << varId << ' ' << nowid << endl;
         ir.push_back(new IR(IR::ADD, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::IVAR, nowid), new IRItem(IRItem::INT, arrayOffset * 4)}));
         ir.push_back(new IR(IR::ARR, {new IRItem(IRItem::IVAR, nameid), new IRItem(IRItem::IVAR, varId)}));
+        if (pn->nodes.size() < pn->symbol->dimensions.size())
+        {
+            int offset = 1;
+            for (int i = pn->nodes.size(); i < pn->symbol->dimensions.size(); i++)
+            {
+                offset *= pn->symbol->dimensions[i];
+            }
+            ir.push_back(new IR(IR::MUL, {new IRItem(IRItem::IVAR, nameid), new IRItem(IRItem::IVAR, nameid), new IRItem(IRItem::INT, offset * 4)}));
+        }
         if(pn->symbol->dataType == Symbol::INT)
             ir.push_back(new IR(IR::LDR, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::IVAR, nameid)}));
         else if(pn->symbol->dataType == Symbol::FLOAT)
