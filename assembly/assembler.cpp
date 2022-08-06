@@ -270,7 +270,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     }
 
                 }else if(op3->type == IRItem::FVAR){
-                    irAsmVectorMap[irId].push_back("PUSH {r0, r1, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2->iVal);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
