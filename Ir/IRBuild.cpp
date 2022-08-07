@@ -486,6 +486,8 @@ vector<IR *> IRBuild::parseIfStmt(parseNode *pn, Symbol *sym,Attribute * att) {
 }
 
 vector<IR*> IRBuild::parseWhileStmt(parseNode* pn, Symbol * sym,Attribute * att) {
+    int continue_last = att->continueLabel;
+    int break_last = att->breakLabel;
     vector<IR *> ir1 = parseTree(pn->nodes[0], sym, att);
     IR *beqIr = new IR(IR::BEQ, {new IRItem(IRItem::IR_ID, 0), new IRItem(ir1.back()->items[0]->type, ir1.back()->items[0]->iVal), ir1.back()->items[0]->type == IRItem::IVAR ? new IRItem(IRItem::INT, 0) : new IRItem(IRItem::FLOAT, 0)});
     att->continueLabel = ir1[0]->irId;
@@ -493,6 +495,8 @@ vector<IR*> IRBuild::parseWhileStmt(parseNode* pn, Symbol * sym,Attribute * att)
     att->breakLabel = irtest.back()->irId + 2;
     ir1[0]->deleteIr(irtest.size());
     vector<IR *> ir2 = parseTree(pn->nodes[1], sym, att);
+    att->breakLabel = break_last;
+    att->continueLabel = continue_last;
     vector<IR *> ir;
     ir.insert(ir.end(), ir1.begin(), ir1.end());
     beqIr->items[0]->iVal = ir1.back()->irId + 1 + ir2.size() + 2;
