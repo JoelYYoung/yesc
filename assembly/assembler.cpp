@@ -1060,6 +1060,9 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::BEQ:{
                 int gotoIrId = funcIr->items[0]->iVal;
+
+                if(gotoIrId > (*(funcIR.end()-1))->irId) break;
+
                 labelInsertSet.insert(gotoIrId);
                 int op2Id = funcIr->items[1]->iVal;
                 IRItem* op3 = funcIr->items[2];
@@ -1094,6 +1097,9 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::BGE:{
                 int gotoIrId = funcIr->items[0]->iVal;
+
+                if(gotoIrId > (*(funcIR.end()-1))->irId) break;
+
                 labelInsertSet.insert(gotoIrId);
                 int op2Id = funcIr->items[1]->iVal;
                 IRItem* op3 = funcIr->items[2];
@@ -1128,6 +1134,9 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::BGT:{
                 int gotoIrId = funcIr->items[0]->iVal;
+
+                if(gotoIrId > (*(funcIR.end()-1))->irId) break;
+
                 labelInsertSet.insert(gotoIrId);
                 int op2Id = funcIr->items[1]->iVal;
                 IRItem* op3 = funcIr->items[2];
@@ -1162,6 +1171,9 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::BLE:{
                 int gotoIrId = funcIr->items[0]->iVal;
+
+                if(gotoIrId > (*(funcIR.end()-1))->irId) break;
+
                 labelInsertSet.insert(gotoIrId);
                 int op2Id = funcIr->items[1]->iVal;
                 IRItem* op3 = funcIr->items[2];
@@ -1196,6 +1208,9 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::BLT:{
                 int gotoIrId = funcIr->items[0]->iVal;
+
+                if(gotoIrId > (*(funcIR.end()-1))->irId) break;
+
                 labelInsertSet.insert(gotoIrId);
                 int op2Id = funcIr->items[1]->iVal;
                 IRItem* op3 = funcIr->items[2];
@@ -1230,6 +1245,9 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             }
             case IR::BNE:{
                 int gotoIrId = funcIr->items[0]->iVal;
+
+                if(gotoIrId > (*(funcIR.end()-1))->irId) break;
+
                 labelInsertSet.insert(gotoIrId);
                 int op2Id = funcIr->items[1]->iVal;
                 IRItem* op3 = funcIr->items[2];
