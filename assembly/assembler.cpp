@@ -228,8 +228,8 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
     for(IR *funcIr : funcIR){
         int irId = funcIr->irId;
 
-        if(irId == 76){
-            //cout <<""<<endl;
+        if(irId == 9){
+            cout <<""<<endl;
         }
 
         //cout << "to irId " << irId << endl;
@@ -369,7 +369,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                }else if(op2->type == IRItem::INT || op2->type == IRItem::FVAR){
+                }else if(op2->type == IRItem::INT || op2->type == IRItem::FLOAT){
                     if(op2->type == IRItem::INT){
                         if(*((unsigned *) (&(op2->iVal))) > 255){
                             buffer << "MOVW r" << allocater.getVarRegId(op1Id)  << ", #:lower16:" << *((unsigned *) (&(op2->iVal)));
