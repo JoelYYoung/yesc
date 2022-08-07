@@ -229,7 +229,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
         int irId = funcIr->irId;
 
         if(irId == 9){
-            cout <<""<<endl;
+            //cout <<""<<endl;
         }
 
         //cout << "to irId " << irId << endl;
