@@ -82,6 +82,10 @@ void IRBuild::parseRoot(parseNode * pn){
         {
             case parseNode::CONST_DEF:
                 constList.push_back(nd->symbol);
+	      if(nd->symbol->dimensions.size()!=0)
+                {
+                    globalList.push_back(nd->symbol);
+                }
                 break;
             case parseNode::FUNC_DEF:
                 funcList.emplace_back(nd->symbol, parseFuncDef(nd, nd->symbol, new Attribute(0, 0)));
@@ -120,7 +124,7 @@ vector<IR *> IRBuild::parseAssignExp(parseNode * pn, Symbol * sym,Attribute * at
         ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, pn->nodes[1]->iVal)}));
         if(pn->nodes[0]->nodes.size() == 0)
         {
-            if(pn->nodes[0]->symbol->symbolType == Symbol::GLOBAL_VAR)
+            if(pn->nodes[0]->symbol->symbolType == Symbol::GLOBAL_VAR || pn->nodes[0]->symbol->symbolType == Symbol::CONST)
             {
                 ir.push_back(new IR(IR::STR, {new IRItem(IRItem::IVAR, varId), new IRItem(ir1[ir1.size()-2]->items[0]->type, ir1[ir1.size()-2]->items[0]->iVal)}));
             }
@@ -140,7 +144,7 @@ vector<IR *> IRBuild::parseAssignExp(parseNode * pn, Symbol * sym,Attribute * at
         ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::FVAR, ++varId), new IRItem(IRItem::FLOAT, pn->nodes[1]->fVal)}));
         if(pn->nodes[0]->nodes.size() == 0)
         {
-            if(pn->nodes[0]->symbol->symbolType == Symbol::GLOBAL_VAR)
+            if(pn->nodes[0]->symbol->symbolType == Symbol::GLOBAL_VAR || pn->nodes[0]->symbol->symbolType == Symbol::CONST)
             {
                 ir.push_back(new IR(IR::STR, {new IRItem(IRItem::FVAR, varId), new IRItem(ir1[ir1.size()-2]->items[0]->type, ir1[ir1.size()-2]->items[0]->iVal)}));
             }
@@ -157,7 +161,7 @@ vector<IR *> IRBuild::parseAssignExp(parseNode * pn, Symbol * sym,Attribute * at
     ir.insert(ir.end(), ir1.begin(), ir1.end());
     if (pn->nodes[0]->nodes.size() == 0)
     {
-        if(pn->nodes[0]->symbol->symbolType == Symbol::GLOBAL_VAR)
+        if(pn->nodes[0]->symbol->symbolType == Symbol::GLOBAL_VAR || pn->nodes[0]->symbol->symbolType == Symbol::CONST)
         {
             ir.push_back(new IR(IR::STR, {new IRItem(ir2.back()->items[0]->type, ir2.back()->items[0]->iVal), new IRItem(ir1[ir1.size()-2]->items[0]->type, ir1[ir1.size()-2]->items[0]->iVal)}));
         }
@@ -188,7 +192,7 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
     }
     if(isparam)
     {
-        if (pn->symbol->symbolType == Symbol::GLOBAL_VAR)
+        if (pn->symbol->symbolType == Symbol::GLOBAL_VAR || pn->symbol->symbolType == Symbol::CONST)
         {
             ir.push_back(new IR(IR::LDR, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::SYMBOL, pn->symbol)}));
             int lastId = varId;
@@ -214,7 +218,7 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
     }
     else
     {
-        if (pn->symbol->symbolType == Symbol::GLOBAL_VAR)
+        if (pn->symbol->symbolType == Symbol::GLOBAL_VAR || pn->symbol->symbolType == Symbol::CONST)
         {
             ir.push_back(new IR(IR::LDR, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::SYMBOL, pn->symbol)}));
             int v = varId;
