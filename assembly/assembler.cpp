@@ -437,7 +437,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                             buffer.str("");
                         }else{  // parameter on stack
                             buffer << "STR r" << allocater.getVarRegId(op1Id) << \
-                            ", [sp, #";
+                            ", [ip, #";
                             irAsmVectorMap[irId].push_back(buffer.str());
                             backFillList.push_back(tuple<int, int, int, Symbol *>(1, irId, irAsmVectorMap[irId].size()-1, op2->symbol));
                             buffer.clear();
@@ -1994,7 +1994,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
 
 
     int tmpVarStackSize = allocater.getTmpVarStackOffset();
-    int allocSize = localDataSize + tmpVarStackSize;
+    int allocSize = (localDataSize + tmpVarStackSize)*4;
     // alloc stack space
     if(allocSize != 0){
         if(allocSize > 255){
@@ -2009,7 +2009,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
 
             asmVector.push_back("SUB sp, sp, r11");
         }else{
-            buffer << "SUB " << "sp, sp, #" << (allocSize * 4);  // byte size
+            buffer << "SUB " << "sp, sp, #" << allocSize;  // byte size
             string localDataStackPrepare(buffer.str());  // INSTRUCTION
             asmVector.push_back(localDataStackPrepare);
             buffer.clear();
