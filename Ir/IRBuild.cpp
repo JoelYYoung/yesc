@@ -275,7 +275,7 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
             {
                 offset *= pn->symbol->dimensions[i];
             }
-            ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, offset * 4)}));
+            ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, offset)}));
             ir.push_back(new IR(IR::MUL, {new IRItem(IRItem::IVAR, varId-1), new IRItem(IRItem::IVAR, varId-1), new IRItem(IRItem::IVAR, varId)}));
             newid = varId - 1;
         }
@@ -323,7 +323,7 @@ vector<IR*> IRBuild::parseOrExp(parseNode* pn,Symbol *sym,Attribute *att) {
     int t1 = ir1.back()->items[0]->iVal;
     ir1[0]->deleteIr(irtest.size());
     ir.push_back(
-            new IR(IR::BNE, {new IRItem(IRItem::IR_ID, ir1.back()->irId + 1 + (int)irtest.size() + 4),
+            new IR(IR::BNE, {new IRItem(IRItem::IR_ID, ir1.back()->irId + 1 + (int)irtest.size() + 3),
                              new IRItem(ir1.back()->items[0]->type, t1),
                              ir1.back()->items[0]->type == IRItem::IVAR
                              ? new IRItem(IRItem::INT, 0)
