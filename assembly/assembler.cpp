@@ -1916,7 +1916,6 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }else{
-                    symbolStackOffset = -symbolStackOffset;
                     buffer << "MOVW r11, #:lower16:"
                            << *((unsigned *) (&(symbolStackOffset)));
                     irAsmVectorMap[irId].push_back(buffer.str());
