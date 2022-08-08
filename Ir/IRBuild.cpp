@@ -706,15 +706,30 @@ void IRBuild::commonExpression()
         {
             if (ir->type == IR::LDR && flag == 0)
             {
-                flag = 1;
                 if (ir->items[1]->type == IRItem::SYMBOL)
-                    name = ir->items[1]->name;
+                {
+                    if(time==0){
+                        name = ir->items[1]->name;
+                    }
+                    else{
+                        if(name != ir->items[1]->name)
+                        {
+                            flag = 0;
+                            time = 0;
+                            sum = 0;
+                            continue;
+                        }
+                    }
+                    flag = 1;
+                }
             }
             else if (ir->type == IR::MOV && flag == 1)
             {
-                flag = 2;
                 if (ir->items[1]->type == IRItem::INT)
+                {
                     add = ir->items[1]->iVal;
+                    flag = 2;
+                }
             }
             else if (ir->type == IR::ADD && flag == 2)
             {
@@ -722,10 +737,24 @@ void IRBuild::commonExpression()
             }
             else if (ir->type == IR::LDR && flag == 3)
             {
+                if (name != ir->items[1]->name)
+                {
+                    flag = 0;
+                    time = 0;
+                    sum = 0;
+                    continue;
+                }
                 flag = 4;
             }
             else if (ir->type == IR::STR && flag == 4)
             {
+                if (name != ir->items[1]->name)
+                {
+                    flag = 0;
+                    time = 0;
+                    sum = 0;
+                    continue;
+                }
                 if (start == false)
                 {
                     start = true;
@@ -734,6 +763,7 @@ void IRBuild::commonExpression()
                 sum += add;
                 time++;
                 lastId = ir->irId;
+                //cout << lastId << endl;
             }
             else{   
                 if (start == true)
@@ -747,8 +777,9 @@ void IRBuild::commonExpression()
                         //cout << func.second.size() << endl;
                     }
                 }
-	      time = 0;
                 flag = 0;
+                time = 0;
+                sum = 0;
             }
         }
     }
