@@ -746,8 +746,8 @@ void IRBuild::commonExpression()
                         func.second.erase(func.second.begin() + lastId + 1 - 5 * time, func.second.begin() + lastId - 4);
                         //cout << func.second.size() << endl;
                     }
-                    time = 0;
                 }
+	      time = 0;
                 flag = 0;
             }
         }
