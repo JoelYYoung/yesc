@@ -741,12 +741,14 @@ void IRBuild::commonExpression()
                     start = false;
                     if (time > 1)
                     {
-                        cout << lastId << endl;
+                        //cout << time<<' '<<lastId << endl;
                         func.second[lastId - func.second[0]->irId - 3]->items[1]->iVal = sum;
                         func.second.erase(func.second.begin() + lastId + 1 - 5 * time, func.second.begin() + lastId - 4);
-                        cout << func.second.size() << endl;
+                        //cout << func.second.size() << endl;
                     }
+                    time = 0;
                 }
+                flag = 0;
             }
         }
     }
