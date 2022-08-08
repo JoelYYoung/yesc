@@ -194,9 +194,9 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
         int irId = funcIr->irId;
         vector<IRItem *> defVarList = funcIr->getDefVar();
         vector<IRItem *> useVarList = funcIr->getUseVar();
-        if(irId == 76){
-            //cout <<""<<endl;
-        }
+//        if(irId == 76){
+//            //cout <<""<<endl;
+//        }
         if(defVarList.size() != 0){
             int defVarId = defVarList[0]->iVal;
             if(tmpVarLiveInterval.find(defVarId) == tmpVarLiveInterval.end()){
@@ -228,9 +228,9 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
     for(IR *funcIr : funcIR){
         int irId = funcIr->irId;
 
-        if(irId == 9){
-            //cout <<""<<endl;
-        }
+//        if(irId == 9){
+//            cout <<""<<endl;
+//        }
 
         //cout << "to irId " << irId << endl;
         irAsmVectorMap[irId] = vector<string>();
@@ -643,6 +643,49 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     callFuncParam = findParamItor->second;
                 }else{
                     callFuncParam = sysFuncParamMap[funcIr->items[0]->symbol->name];
+                }
+
+                if(funcIr->items[0]->symbol->name == "putfloat"){
+                    if(funcIr->items[1]->type == IRItem::FVAR){
+                        irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
+
+                        buffer << "VMOV s0, r" << allocater.getVarRegId(funcIr->items[1]->iVal);
+                        irAsmVectorMap[irId].push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+
+                        irAsmVectorMap[irId].push_back("BLX putfloat");
+                        irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
+                    }
+                    break;
+                }else if(funcIr->items[0]->symbol->name == "getfloat"){
+                    // look ahead for next IR, if is MOV VAL, RETURN:
+                    IR *nextIr = funcIR[irIndex+1];
+                    if(nextIr->type == IR::MOV && nextIr->items[1]->type == IRItem::RETURN){
+                        int nextOp1Id = nextIr->items[0]->iVal;
+                        vector<int> tmpVarList({nextOp1Id, });
+                        vector<string> irAsmList;
+                        allocater.allocateVar(irId, tmpVarList, irAsmList);
+                        irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
+                    }
+
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
+
+                    irAsmVectorMap[irId].push_back("BLX getfloat");
+                    if(nextIr->type == IR::MOV && nextIr->items[1]->type == IRItem::RETURN){
+                        int nextOp1Id = nextIr->items[0]->iVal;
+                        vector<int> tmpVarList({nextOp1Id, });
+                        vector<string> irAsmList;
+                        allocater.allocateVar(irId, tmpVarList, irAsmList);
+                        irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
+                        buffer << "VMOV r" << allocater.getVarRegId(nextOp1Id) << ", s0";
+                        irAsmVectorMap[irId].push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                    }
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
+
+                    break;
                 }
 
                 // look ahead for next IR, if is MOV VAL, RETURN:
@@ -1969,7 +2012,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
     for(tuple<int, int, int, Symbol *> backFillInfo : backFillList){
         string initialAsm(irAsmVectorMap[get<1>(backFillInfo)][get<2>(backFillInfo)]);
         buffer << (usedRegister.size() +
-                   funcParam.getLocationId(get<3>(backFillInfo)) + useLR)*4;
+                   funcParam.getLocationId(get<3>(backFillInfo)) + useLR+1)*4;  //fp and lr
         if(get<0>(backFillInfo) == 1) {  // need "]"
             buffer << "]";
         }
@@ -1998,6 +2041,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             for(int saveRegId : usedRegister){
                 buffer << "r" << saveRegId << ",";
             }
+            buffer << "fp,";
             if(useLR){
                 buffer << "lr,";
             }
@@ -2049,6 +2093,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
         for(int saveRegId : usedRegister){
             buffer << "r" << saveRegId << ",";
         }
+        buffer << "fp,";
         if(useLR){
             buffer << "lr,";
         }
