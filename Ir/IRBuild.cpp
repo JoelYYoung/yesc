@@ -8,7 +8,6 @@
 using namespace std;
 
 IRBuild::IRBuild(parseNode *root, vector<Symbol *> &symbols) {
-    this->isProcessed = false;
     this->varId = 0;
     this->root = root;
     this->symbols = symbols;
@@ -671,5 +670,24 @@ void IRBuild::printIRs(bool silentMode) {
             for (IR *ir : func.second)
                 cout << ir->toString() << endl;
         }
+    }
+}
+
+void IRBuild::printBlocks() {
+    parseRoot(root);
+    for (Symbol *con : constList)
+        cout << con->toString() << endl;
+    for (Symbol *global : globalList)
+        cout << global->toString() << endl;
+    //cout << "size:" << funcList.size() << endl;
+    for (pair<Symbol *, vector<IR *>> func : funcList)
+    {
+        vector<BaseBlock *> blocks;
+        blocks = blockbuilder.generateFunctionBlock(func.second);
+        this->BlcokList.emplace_back(func.first,blocks);
+        cout << func.first->name << endl;
+        //cout << func.second.size() << endl;
+        for (BaseBlock *bb : blocks)
+            cout << bb->toString() << endl;
     }
 }
