@@ -737,45 +737,43 @@ void IRBuild::commonExpression()
             }
             else if (ir->type == IR::LDR && flag == 3)
             {
-                if (name != ir->items[1]->name)
+                if (ir->items[1]->type == IRItem::SYMBOL)
                 {
-                    flag = 0;
-                    time = 0;
-                    sum = 0;
-                    continue;
+                    
+                    if (name != ir->items[1]->name)
+                    {
+                        flag = 0;
+                        time = 0;
+                        sum = 0;
+                        continue;
+                    }
+                    flag = 4;
                 }
-                flag = 4;
             }
             else if (ir->type == IR::STR && flag == 4)
             {
-                if (name != ir->items[1]->name)
+                if (ir->items[1]->type == IRItem::SYMBOL)
                 {
-                    flag = 0;
-                    time = 0;
-                    sum = 0;
-                    continue;
-                }
-                if (start == false)
-                {
-                    start = true;
-                }
-                flag = 0;
-                sum += add;
-                time++;
-                lastId = ir->irId;
-                //cout << lastId << endl;
-            }
-            else{   
-                if (start == true)
-                {
-                    start = false;
-                    if (time > 1)
+                    if (name != ir->items[1]->name)
                     {
-                        //cout << time<<' '<<lastId << endl;
-                        func.second[lastId - func.second[0]->irId - 3]->items[1]->iVal = sum;
-                        func.second.erase(func.second.begin() + lastId + 1 - 5 * time, func.second.begin() + lastId - 4);
-                        //cout << func.second.size() << endl;
+                        flag = 0;
+                        time = 0;
+                        sum = 0;
+                        continue;
                     }
+                    flag = 0;
+                    sum += add;
+                    time++;
+                    lastId = ir->irId;
+                }
+            }
+            else{
+                if (time > 1)
+                {
+                    //cout << time<<' '<<lastId << endl;
+                    func.second[lastId - func.second[0]->irId - 3]->items[1]->iVal = sum;
+                    func.second.erase(func.second.begin() + lastId + 1 - 5 * time, func.second.begin() + lastId - 4);
+                    // cout << func.second.size() << endl;
                 }
                 flag = 0;
                 time = 0;
