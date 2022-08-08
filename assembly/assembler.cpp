@@ -647,7 +647,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
 
                 if(funcIr->items[0]->symbol->name == "putfloat"){
                     if(funcIr->items[1]->type == IRItem::FVAR){
-                        irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                        irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
 
                         buffer << "VMOV s0, r" << allocater.getVarRegId(funcIr->items[1]->iVal);
                         irAsmVectorMap[irId].push_back(buffer.str());
@@ -655,7 +655,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.str("");
 
                         irAsmVectorMap[irId].push_back("BLX putfloat");
-                        irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                        irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     }
                     break;
                 }else if(funcIr->items[0]->symbol->name == "getfloat"){
@@ -669,7 +669,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
                     }
 
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
 
                     irAsmVectorMap[irId].push_back("BLX getfloat");
                     if(nextIr->type == IR::MOV && nextIr->items[1]->type == IRItem::RETURN){
@@ -683,7 +683,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
 
                     break;
                 }
@@ -709,10 +709,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
 
                 irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
-                int subSize = (paramStackSize+1)%2;
-                if(subSize == 1){
-                    irAsmVectorMap[irId].push_back("SUB sp, sp, #4");
-                }
+
                 // parameter into stack
                 if(paramRegSize >= 1 && paramStackSize == 0){
                     for(int i = 0; i < paramRegSize; i++){
@@ -755,8 +752,8 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 irAsmVectorMap[irId].push_back("BL " + funcIr->items[0]->symbol->name);
 
                 // reserve registers pop r0-r3, lr, ip
-                if(paramStackSize != 0 || subSize !=0){
-                    buffer << "ADD sp, sp, #" << (paramStackSize+subSize) * 4;
+                if(paramStackSize != 0){
+                    buffer << "ADD sp, sp, #" << paramStackSize * 4;
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
@@ -814,7 +811,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }else if(op3->type == IRItem::FVAR){
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -828,7 +825,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     useLR = true;
                 }else if(op3->type == IRItem::INT){
                     buffer << "MUL r" << allocater.getVarRegId(op1Id) << ", r" << allocater.getVarRegId(op2Id)
@@ -837,7 +834,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }else if(op3->type == IRItem::FLOAT){
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -864,7 +861,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     useLR = true;
                 }
 
@@ -886,7 +883,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
 
                 if(op3->type == IRItem::IVAR){
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     //cout << "op2Id is" << op2Id << endl;
                     irAsmVectorMap[irId].push_back(buffer.str());
@@ -901,10 +898,10 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     useLR = true;
                 }else if(op3->type == IRItem::FVAR){
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -918,10 +915,10 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     useLR = true;
                 }else if(op3->type == IRItem::INT){
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -935,10 +932,10 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     useLR = true;
                 }else if(op3->type == IRItem::FLOAT){
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -964,7 +961,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     useLR = true;
                 }
 
@@ -992,7 +989,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }else if(op3->type == IRItem::FVAR){
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1006,7 +1003,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     useLR = true;
                 }else if(op3->type == IRItem::INT){
                     buffer << "SUB r" << allocater.getVarRegId(op1Id) << ", r" << allocater.getVarRegId(op2Id)
@@ -1015,7 +1012,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }else if(op3->type == IRItem::FLOAT){
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1042,7 +1039,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     useLR = true;
                 }
 
@@ -1056,7 +1053,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 allocater.allocateVar(irId, tmpVarList, irAsmList);
                 irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
 
-                irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                 buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                 irAsmVectorMap[irId].push_back(buffer.str());
                 buffer.clear();
@@ -1066,7 +1063,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 irAsmVectorMap[irId].push_back(buffer.str());
                 buffer.clear();
                 buffer.str("");
-                irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                 useLR = true;
                 break;
             }
@@ -1078,7 +1075,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 allocater.allocateVar(irId, tmpVarList, irAsmList);
                 irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
 
-                irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                 buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                 irAsmVectorMap[irId].push_back(buffer.str());
                 buffer.clear();
@@ -1088,7 +1085,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 irAsmVectorMap[irId].push_back(buffer.str());
                 buffer.clear();
                 buffer.str("");
-                irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                 useLR = true;
                 break;
             }
@@ -1338,7 +1335,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     vector<string> irAsmList;
                     allocater.allocateVar(irId, tmpVarList, irAsmList);
                     irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1371,7 +1368,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     buffer << "CMP r" << allocater.getVarRegId(op1Id) << ", #0";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1423,7 +1420,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     vector<string> irAsmList;
                     allocater.allocateVar(irId, tmpVarList, irAsmList);
                     irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1456,7 +1453,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     buffer << "CMP r" << allocater.getVarRegId(op1Id) << ", #0";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1508,7 +1505,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     vector<string> irAsmList;
                     allocater.allocateVar(irId, tmpVarList, irAsmList);
                     irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1541,7 +1538,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     buffer << "CMP r" << allocater.getVarRegId(op1Id) << ", #0";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1595,7 +1592,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     vector<string> irAsmList;
                     allocater.allocateVar(irId, tmpVarList, irAsmList);
                     irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1628,7 +1625,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     buffer << "CMP r" << allocater.getVarRegId(op1Id) << ", #0";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1682,7 +1679,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     vector<string> irAsmList;
                     allocater.allocateVar(irId, tmpVarList, irAsmList);
                     irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1715,7 +1712,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     buffer << "CMP r" << allocater.getVarRegId(op1Id) << ", #0";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1770,7 +1767,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     vector<string> irAsmList;
                     allocater.allocateVar(irId, tmpVarList, irAsmList);
                     irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1803,7 +1800,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     buffer << "CMP r" << allocater.getVarRegId(op1Id) << ", #0";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1861,7 +1858,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 irAsmVectorMap[irId].insert(irAsmVectorMap[irId].end(), irAsmList.begin(), irAsmList.end());
 
                 if(op3->type == IRItem::IVAR) {
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1875,10 +1872,10 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     useLR = true;
                 }else if(op3->type == IRItem::INT){
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                     buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1892,7 +1889,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r4, ip}");
+                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                     useLR = true;
                 }
                 break;
@@ -2015,7 +2012,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
     for(tuple<int, int, int, Symbol *> backFillInfo : backFillList){
         string initialAsm(irAsmVectorMap[get<1>(backFillInfo)][get<2>(backFillInfo)]);
         buffer << (usedRegister.size() +
-                   funcParam.getLocationId(get<3>(backFillInfo)) + useLR)*4;  //lr
+                   funcParam.getLocationId(get<3>(backFillInfo)) + useLR+1)*4;  //fp and lr
         if(get<0>(backFillInfo) == 1) {  // need "]"
             buffer << "]";
         }
@@ -2033,8 +2030,6 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
         buffer.str("");
     }
 
-    int tmpVarStackSize = allocater.getTmpVarStackOffset();
-    int duiqi = localDataSize + tmpVarStackSize + usedRegister.size() + useLR;
     //insert recovering code for RETURN IR
     for(int returnIrId : returnIRList){
             buffer << "MOV sp, ip";
@@ -2046,6 +2041,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             for(int saveRegId : usedRegister){
                 buffer << "r" << saveRegId << ",";
             }
+            buffer << "fp,";
             if(useLR){
                 buffer << "lr,";
             }
@@ -2055,13 +2051,10 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             *(recoveringAsm.end()-1) = '}';
             irAsmVectorMap[returnIrId].insert(irAsmVectorMap[returnIrId].end() - 1, recoveringAsm);
         }
-//        if((duiqi%2) == 1){
-//            irAsmVectorMap[returnIrId].insert(irAsmVectorMap[returnIrId].end() - 1, "ADD sp, sp, #4");
-//        }
     }
 
 
-
+    int tmpVarStackSize = allocater.getTmpVarStackOffset();
     int allocSize = (localDataSize + tmpVarStackSize)*4;
     // alloc stack space
     if(allocSize != 0){
@@ -2100,6 +2093,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
         for(int saveRegId : usedRegister){
             buffer << "r" << saveRegId << ",";
         }
+        buffer << "fp,";
         if(useLR){
             buffer << "lr,";
         }
@@ -2108,9 +2102,6 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
         buffer.str("");
         *(savingAsm.end()-1) = '}';
         asmVector.insert(asmVector.begin() + firstAsmIndex, savingAsm);
-        if((duiqi%2) == 1){
-            asmVector.insert(asmVector.begin() + firstAsmIndex + 1, "SUB sp, sp, #4");
-        }
     }
 
     asmVector.insert(asmVector.begin() + firstAsmIndex + offsetFlag, "MOV ip, sp");
