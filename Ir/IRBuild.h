@@ -4,18 +4,20 @@
 #include <utility>
 #include <vector>
 #include "IR.h"
-
+#include "../optimize/BaseBlock.h"
+#include "../optimize/BlockBuild.h"
 using namespace std;
 
 class IRBuild {
 private:
-    bool isProcessed;
     parseNode *root;
     vector<Symbol *> symbols;
     vector<Symbol *> constList;
     vector<Symbol *> globalList;
     unordered_map<Symbol *, vector<Symbol *>> localList;
     vector<pair<Symbol *, vector<IR *>>> funcList;
+    vector<pair<Symbol *, vector<BaseBlock *>>> BlcokList;
+    BlockBuild blockbuilder;
     int varId;
     void parseRoot(parseNode *);
     vector<IR *> parseTree(parseNode *, Symbol *, Attribute * att);
@@ -44,6 +46,7 @@ public:
     vector<Symbol *> getSymtemFunc();
     vector<pair<Symbol *, vector<IR *>>> getFuncs();
     void printIRs(bool silentMode = true);
+    void printBlocks();
 
     IRBuild(parseNode *, vector<Symbol *> &);
     ~IRBuild();

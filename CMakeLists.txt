@@ -13,16 +13,16 @@ else ()
 endif ()
 
 add_executable(hust
-        main.cpp
+        	main.cpp
 		lexer/lexer.h
 		lexer/lexer.cpp
 		lexer/tokenInfo.cpp
-    	syntax/analyse.cpp
-    	syntax/analyse.h
-    	syntax/parseNode.cpp
-    	syntax/parseNode.h
-    	syntax/symbolTable.cpp
-    	syntax/symbolTable.h
+    		syntax/analyse.cpp
+    		syntax/analyse.h
+    		syntax/parseNode.cpp
+    		syntax/parseNode.h
+    		syntax/symbolTable.cpp
+    		syntax/symbolTable.h
 		syntax/Util.h
 		syntax/Util.cpp
 		Ir/IR.h
@@ -39,4 +39,8 @@ add_executable(hust
 		assembly/assembler.cpp
 		assembly/allocater.h
 		assembly/allocater.cpp
+		optimize/BaseBlock.h
+		optimize/BaseBlock.cpp
+		optimize/BlockBuild.h
+		optimize/BlockBuild.cpp
 		)
