@@ -47,7 +47,7 @@ public:
     vector<pair<Symbol *, vector<IR *>>> getFuncs();
     void printIRs(bool silentMode = true);
     void printBlocks();
-
+    void commonExpression();
     IRBuild(parseNode *, vector<Symbol *> &);
     ~IRBuild();
 };

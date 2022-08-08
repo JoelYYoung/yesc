@@ -11,6 +11,7 @@ IRBuild::IRBuild(parseNode *root, vector<Symbol *> &symbols) {
     this->varId = 0;
     this->root = root;
     this->symbols = symbols;
+    parseRoot(root);
 }
 
 IRBuild::~IRBuild() {
@@ -655,8 +656,7 @@ vector<Symbol* > IRBuild::getSymtemFunc() {
 }
 
 void IRBuild::printIRs(bool silentMode) {
-    //cout << 1 << endl;
-    parseRoot(root);
+    //parseRoot(root);
     if(silentMode == false){
         for (Symbol *con : constList)
             cout << con->toString() << endl;
@@ -674,7 +674,7 @@ void IRBuild::printIRs(bool silentMode) {
 }
 
 void IRBuild::printBlocks() {
-    parseRoot(root);
+    //parseRoot(root);
     for (Symbol *con : constList)
         cout << con->toString() << endl;
     for (Symbol *global : globalList)
@@ -689,5 +689,65 @@ void IRBuild::printBlocks() {
         //cout << func.second.size() << endl;
         for (BaseBlock *bb : blocks)
             cout << bb->toString() << endl;
+    }
+}
+
+void IRBuild::commonExpression()
+{
+    for(pair<Symbol *, vector<IR *>> &func : funcList)
+    {
+        string name;
+        bool start = false;
+        int flag = 0;
+        int sum = 0, time = 0;
+        int add;
+        int lastId;
+        for (IR *ir : func.second)
+        {
+            if (ir->type == IR::LDR && flag == 0)
+            {
+                flag = 1;
+                if (ir->items[1]->type == IRItem::SYMBOL)
+                    name = ir->items[1]->name;
+            }
+            else if (ir->type == IR::MOV && flag == 1)
+            {
+                flag = 2;
+                if (ir->items[1]->type == IRItem::INT)
+                    add = ir->items[1]->iVal;
+            }
+            else if (ir->type == IR::ADD && flag == 2)
+            {
+                flag = 3;
+            }
+            else if (ir->type == IR::LDR && flag == 3)
+            {
+                flag = 4;
+            }
+            else if (ir->type == IR::STR && flag == 4)
+            {
+                if (start == false)
+                {
+                    start = true;
+                }
+                flag = 0;
+                sum += add;
+                time++;
+                lastId = ir->irId;
+            }
+            else{   
+                if (start == true)
+                {
+                    start = false;
+                    if (time > 1)
+                    {
+                        cout << lastId << endl;
+                        func.second[lastId - func.second[0]->irId - 3]->items[1]->iVal = sum;
+                        func.second.erase(func.second.begin() + lastId + 1 - 5 * time, func.second.begin() + lastId - 4);
+                        cout << func.second.size() << endl;
+                    }
+                }
+            }
+        }
     }
 }
