@@ -394,6 +394,11 @@ vector<IR*> IRBuild::parseAlgoExp(parseNode * pn, Symbol * sym,Attribute * att)
             {
                 for (int i = 0; i < pn->nodes[0]->nodes.size(); i++)
                 {
+		 if(pn->nodes[0]->nodes[i]->parseType != parseNode::INT_LITERAL || pn->nodes[1]->nodes[i]->parseType != parseNode::INT_LITERAL)
+                    {
+                        flag = 1;
+                        break;
+                    }
                     if(pn->nodes[0]->nodes[i]->iVal != pn->nodes[1]->nodes[i]->iVal)
                     {
                         flag = 1;
