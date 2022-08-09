@@ -782,3 +782,85 @@ void IRBuild::commonExpression()
         }
     }
 }
+
+void IRBuild::deadExpDelete()
+{
+    for(pair<Symbol *, vector<IR *>> &func : funcList)
+    {
+        string name;
+        int flag = 0;
+        int varId;
+        unordered_map<string, int> mp;
+        for (IR *ir : func.second)
+        {
+            if (ir->type == IR::LDR)
+            {
+                if (ir->items[1]->type == IRItem::SYMBOL)
+                {
+                    name = ir->items[1]->symbol->name;
+                    if (mp.count(name) == 1)
+                    {
+                        mp[name] = 0;
+                        continue;
+                    }
+                    flag = 1;
+                }
+            }
+            else if (ir->type == IR::MOV && flag == 1)
+            {
+                if (ir->items[1]->type == IRItem::INT)
+                {
+                    flag = 2;
+                    varId = ir->items[0]->iVal;
+                }
+                else
+                    flag = 0;
+            }
+            else if(ir->type == IR::STR && flag == 2)
+            {
+                if (ir->items[1]->type == IRItem::SYMBOL)
+                {
+                    if (name != ir->items[1]->symbol->name || varId != ir->items[0]->iVal)
+                    {
+                        flag = 0;
+                        varId = 0;
+                        continue;
+                    }
+                    mp[name] = 1;
+                    flag = 0;
+                }
+                else
+                    flag = 0;
+            }
+            else{
+                flag = 0;
+                varId = 0;
+            }
+        }
+        flag = 0;
+        varId = 0;
+        int deletesize = 0;
+        vector<int> delList;
+        int first = func.second[0]->irId;
+        for (IR *ir : func.second)
+        {
+            if (ir->type == IR::LDR)
+            {
+                if (ir->items[1]->type == IRItem::SYMBOL)
+                {
+                    name = ir->items[1]->symbol->name;
+                    if (mp.count(name) == 1 && mp[name] == 1)
+                    {
+                        //func.second.erase(func.second.begin() + ir->irId - first - deletesize, func.second.begin() + ir->irId - first + 3 - deletesize);
+                        delList.push_back(ir->irId - first);
+                    }
+                }
+            }
+        }
+        for(int i : delList)
+        {
+            func.second.erase(func.second.begin() + i - deletesize, func.second.begin() + i + 3 - deletesize);
+            deletesize += 3;
+        }
+    }
+}

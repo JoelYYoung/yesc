@@ -48,6 +48,7 @@ public:
     void printIRs(bool silentMode = true);
     void printBlocks();
     void commonExpression();
+    void deadExpDelete();
     IRBuild(parseNode *, vector<Symbol *> &);
     ~IRBuild();
 };
