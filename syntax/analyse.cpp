@@ -21,13 +21,13 @@ Analyse::~Analyse() {
 }
 
 void Analyse::allocInitVal(vector<int> array,  unordered_map<int, parseNode *> &exps, int base, parseNode *src) {
-  if (array.empty()) {
+  /*if (array.empty()) {
     while (src && src->parseType == parseNode::INIT_VAL)
       src = src->nodes.empty() ? nullptr : src->nodes[0];
     if (src)
       exps[base] = src;
     return;
-  }
+  }*/
   vector<int> index(array.size(), 0);
   vector<parseNode *> stk(src->nodes.rbegin(), src->nodes.rend());
   while (!stk.empty()) {
