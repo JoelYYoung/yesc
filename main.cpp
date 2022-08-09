@@ -54,7 +54,10 @@ int main(int argc, char **argv)
     parseNode *pn = analyse->getparseNode();
     IRBuild Ir(pn, symbolList);
     if(optimizeLevel == 2)
+    {
         Ir.commonExpression();
+        Ir.deadExpDelete();
+    }
     //Ir.printIRs(true);
     Assembler assembler = Assembler(Ir);
     assembler.generateAsm();
