@@ -306,10 +306,10 @@ template <typename T> void Analyse::parseConstInitVal(vector<int> array, unorder
       for (int i = 0; i < array.size(); i++)
         offset = offset * array[i] + index[i];
       if (stk.back()->parseType == parseNode::INT_LITERAL) {
-        if (stk.back()->iVal)
+        //if (stk.back()->iVal)
           tMap[base + offset] = stk.back()->iVal;
       } else {
-        if (stk.back()->fVal)
+        //if (stk.back()->fVal)
           tMap[base + offset] = stk.back()->fVal;
       }
       index.back()++;
@@ -333,11 +333,14 @@ template <typename T> void Analyse::parseConstInitVal(vector<int> array, unorder
       parseConstInitVal(newArray, tMap, base + offset, stk.back());
       index[d]++;
     }
-    for (int i = array.size() - 1; i >= 0 && index[i] >= array[i]; i--) {
-      index[i] = 0;
-      if (i == 0)
-        return;
-      index[i - 1]++;
+    for (int i = array.size() - 1; i >= 0; i--) {
+      if(index[i] == array[i]
+      {
+          index[i] = 0;
+          if (i == 0)
+            return;
+          index[i - 1]++;
+      }
     }
     stk.pop_back();
   }
