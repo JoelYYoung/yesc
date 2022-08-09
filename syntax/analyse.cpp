@@ -21,13 +21,6 @@ Analyse::~Analyse() {
 }
 
 void Analyse::allocInitVal(vector<int> array,  unordered_map<int, parseNode *> &exps, int base, parseNode *src) {
-  /*if (array.empty()) {
-    while (src && src->parseType == parseNode::INIT_VAL)
-      src = src->nodes.empty() ? nullptr : src->nodes[0];
-    if (src)
-      exps[base] = src;
-    return;
-  }*/
   vector<int> index(array.size(), 0);
   vector<parseNode *> stk(src->nodes.rbegin(), src->nodes.rend());
   while (!stk.empty()) {
@@ -305,20 +298,6 @@ vector<parseNode *> Analyse::parseConstDef() {
 }
 
 template <typename T> void Analyse::parseConstInitVal(vector<int> array, unordered_map<int, T> &tMap, int base, parseNode *src) {
-  if (array.empty()) {
-    while (src && src->parseType == parseNode::INIT_VAL)
-      src = src->nodes.empty() ? nullptr : src->nodes[0];
-    if (src) {
-      if (src->parseType == parseNode::INT_LITERAL) {
-        if (src->iVal)
-          tMap[base] = src->iVal;
-      } else {
-        if (src->fVal)
-          tMap[base] = src->fVal;
-      }
-    }
-    return;
-  }
   vector<int> index(array.size());
   vector<parseNode *> stk(src->nodes.rbegin(), src->nodes.rend());
   while (!stk.empty()) {
