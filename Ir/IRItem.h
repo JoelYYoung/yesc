@@ -19,7 +19,6 @@ public:
     FLOAT,
     FVAR,
     IR_ID,
-    PLT,
     RETURN,
     SYMBOL,
     VAL,

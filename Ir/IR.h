@@ -14,14 +14,8 @@ public:
     ADD,
     ARR,
     BEQ,
-    BGE,
-    BGT,
-    BLE,
-    BLT,
     BNE,  
-    BREAK,
     CALL,
-    CONTINUE,
     DIV,
     EQ, //==
     F2I,
@@ -40,8 +34,6 @@ public:
     NAME,
     NE, //!=
     NEG, // -
-    POP,
-    PUSH,
     RETURN,
     STR,
     SUB

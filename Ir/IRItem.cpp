@@ -7,8 +7,7 @@ using namespace std;
 
 unordered_map<IRItem::IRItemType, string> ItemStr = {
     {IRItem::FLOAT, "FLOAT"},  {IRItem::INT, "INT"},  {IRItem::IR_ID, "IR_ID"},     
-    {IRItem::IVAR, "IVAR"}, {IRItem::FVAR, "FVAR"},
-    {IRItem::PLT, "PLT"},       {IRItem::RETURN, "RETURN"},
+    {IRItem::IVAR, "IVAR"}, {IRItem::FVAR, "FVAR"}, {IRItem::RETURN, "RETURN"},
     {IRItem::SYMBOL, "SYMBOL"}, {IRItem::VAL, "VAL"}, {IRItem::PC, "PC"},
     {IRItem::STRING, "STRING"}, {IRItem::SVAR, "SVAR"}
 };
