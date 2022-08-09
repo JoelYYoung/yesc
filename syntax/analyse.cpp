@@ -189,22 +189,7 @@ parseNode *Analyse::parseAddExp() {
     }
   }
   parseNode *root = items[0];
-  if (root->parseType == parseNode::L_VAL && root->nodes.size() < root->symbol->dimensions.size()) {
-    int multisize = 4;
-    for (int i = root->nodes.size() + 1; i < root->symbol->dimensions.size(); i++)
-      multisize *= root->symbol->dimensions[i];
-    for (int i = 0; i < opList.size(); i++) {
-      parseNode *left = root;
-      parseNode *right = items[i + 1];
-      if (!left->isFloat && right->isFloat)
-        left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
-      if (left->isFloat && !right->isFloat)
-        right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});
-      right = new parseNode(parseNode::BINARY_EXP, left->isFloat, parseNode::MUL, {right, left->isFloat ? new parseNode((float)multisize) : new parseNode(multisize)});
-      root = new parseNode(parseNode::BINARY_EXP, left->isFloat, opList[i], {left, right});
-    }
-  } else {
-    for (int i = 0; i < opList.size(); i++) {
+  for (int i = 0; i < opList.size(); i++) {
       parseNode *left = root;
       parseNode *right = items[i + 1];
       if (!left->isFloat && right->isFloat)
@@ -216,7 +201,6 @@ parseNode *Analyse::parseAddExp() {
         right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});
       }
       root = new parseNode(parseNode::BINARY_EXP, left->isFloat, opList[i], {left, right});
-    }
   }
   return root;
 }
