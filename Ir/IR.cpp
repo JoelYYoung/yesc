@@ -11,6 +11,10 @@ unordered_map<IR::IRType, string> irTypeStr = {
     {IR::ADD, "ADD"},
     {IR::ARR, "ARR"},
     {IR::BEQ, "BEQ"},
+    {IR::BGE, "BGE"},
+    {IR::BGT, "BGT"},
+    {IR::BLE, "BLE"},
+    {IR::BLT, "BLT"},
     {IR::BNE, "BNE"},
     {IR::CALL, "CALL"},
     {IR::DIV, "DIV"},
@@ -78,9 +82,6 @@ string IR::toString() {
     case IRItem::IR_ID:
       s += to_string(item->iVal);
       break;
-    case IRItem::PLT:
-      s += item->name;
-      break;
     case IRItem::SYMBOL:
       s += item->symbol->name;
       break;
@@ -97,33 +98,4 @@ string IR::toString() {
   }
   s += ")";
   return s;
-}
-
-vector<IRItem *> IR::getDefVar() {
-    vector<IRItem *> defVarVec;
-    if(this->type == IR::STR || this->type == IR::RETURN){
-        return defVarVec;
-    }
-    if(this->items[0]->type == IRItem::FVAR || this->items[0]->type == IRItem::IVAR){
-        defVarVec.push_back(this->items[0]);
-        return defVarVec;
-    }else{
-        return defVarVec;
-    }
-}
-
-vector<IRItem *> IR::getUseVar() {
-    vector<IRItem *> useVarVec;
-    if(this->type == IR::RETURN && this->items.size() == 0){
-        return useVarVec;
-    }
-    auto tmpIt = this->items.begin() + 1;
-    if(this->type == IR::STR || this->type == IR::RETURN) tmpIt = this->items.begin();
-    while(tmpIt != this->items.end()){
-        if((*tmpIt)->type == IRItem::FVAR || (*tmpIt)->type == IRItem::IVAR){
-            useVarVec.push_back(*tmpIt);
-        }
-        tmpIt ++;
-    }
-    return useVarVec;
 }
