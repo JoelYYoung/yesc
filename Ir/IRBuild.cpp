@@ -327,24 +327,16 @@ vector<IR*> IRBuild::parseOrExp(parseNode* pn,Symbol *sym,Attribute *att) {
     int t1 = ir1.back()->items[0]->iVal;
     ir1[0]->deleteIr(irtest.size());
     ir.push_back(
-            new IR(IR::BNE, {new IRItem(IRItem::IR_ID, ir1.back()->irId + 1 + (int)irtest.size() + 4),
-                             new IRItem(ir1.back()->items[0]->type, t1),
-                             ir1.back()->items[0]->type == IRItem::IVAR
-                             ? new IRItem(IRItem::INT, 0)
-                             : new IRItem(IRItem::FLOAT, 0)}));
+            new IR(IR::BNE, {new IRItem(IRItem::IR_ID, ir1.back()->irId + 1 + (int)irtest.size() + 4), new IRItem(ir1.back()->items[0]->type, t1),
+                             ir1.back()->items[0]->type == IRItem::IVAR ? new IRItem(IRItem::INT, 0) : new IRItem(IRItem::FLOAT, 0)}));
     vector<IR *> ir2 = parseTree(pn->nodes[1], sym, att);
     int t2 = ir2.back()->items[0]->iVal;
     ir.insert(ir.end(), ir2.begin(), ir2.end());
-    ir.push_back(new IR(IR::BNE, {new IRItem(IRItem::IR_ID, ir2.back()->irId + 1 + 3),
-                                  new IRItem(ir2.back()->items[0]->type, t2),
-                                  ir2.back()->items[0]->type == IRItem::IVAR
-                                  ? new IRItem(IRItem::INT, 0)
-                                  : new IRItem(IRItem::FLOAT, 0)}));
-    ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId),
-                                  new IRItem(IRItem::INT, 0)}));
+    ir.push_back(new IR(IR::BNE, {new IRItem(IRItem::IR_ID, ir2.back()->irId + 1 + 3), new IRItem(ir2.back()->items[0]->type, t2),
+                                  ir2.back()->items[0]->type == IRItem::IVAR ? new IRItem(IRItem::INT, 0) : new IRItem(IRItem::FLOAT, 0)}));
+    ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, 0)}));
     ir.push_back(new IR(IR::GOTO, {new IRItem(IRItem::IR_ID, ir2.back()->irId + 5)}));
-    ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, varId),
-                                  new IRItem(IRItem::INT, 1)}));
+    ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, varId), new IRItem(IRItem::INT, 1)}));
     return ir;
 }
 
@@ -356,34 +348,22 @@ vector<IR*> IRBuild::parseAndExp(parseNode* pn,Symbol *sym,Attribute *att) {
     int t1 = ir1.back()->items[0]->iVal;
     irtest[0]->deleteIr(irtest.size());
     ir.push_back(
-            new IR(IR::BEQ, {new IRItem(IRItem::IR_ID, ir1.back()->irId + 1 + (int)irtest.size() + 2),
-                             new IRItem(ir1.back()->items[0]->type, t1),
-                             ir1.back()->items[0]->type == IRItem::IVAR
-                             ? new IRItem(IRItem::INT, 0)
-                             : new IRItem(IRItem::FLOAT, 0)}));
+            new IR(IR::BEQ, {new IRItem(IRItem::IR_ID, ir1.back()->irId + 1 + (int)irtest.size() + 2), new IRItem(ir1.back()->items[0]->type, t1),
+                             ir1.back()->items[0]->type == IRItem::IVAR ? new IRItem(IRItem::INT, 0) : new IRItem(IRItem::FLOAT, 0)}));
     vector<IR *> ir2 = parseTree(pn->nodes[1], sym, att);
     int t2 = ir2.back()->items[0]->iVal;
     ir.insert(ir.end(), ir2.begin(), ir2.end());
-    ir.push_back(new IR(IR::BNE, {new IRItem(IRItem::IR_ID, ir2.back()->irId + 4),
-                                  new IRItem(ir2.back()->items[0]->type, t2),
-                                  ir2.back()->items[0]->type == IRItem::IVAR
-                                  ? new IRItem(IRItem::INT, 0)
-                                  : new IRItem(IRItem::FLOAT, 0)}));
-    ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId),
-                                  new IRItem(IRItem::INT, 0)}));
+    ir.push_back(new IR(IR::BNE, {new IRItem(IRItem::IR_ID, ir2.back()->irId + 4), new IRItem(ir2.back()->items[0]->type, t2),
+                                  ir2.back()->items[0]->type == IRItem::IVAR ? new IRItem(IRItem::INT, 0) : new IRItem(IRItem::FLOAT, 0)}));
+    ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, 0)}));
     ir.push_back(new IR(IR::GOTO, {new IRItem(IRItem::IR_ID, ir2.back()->irId + 5)}));
-    ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, varId),
-                                  new IRItem(IRItem::INT, 1)}));
+    ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, varId), new IRItem(IRItem::INT, 1)}));
     return ir;
 }
 
 vector<IR*> IRBuild::parseAlgoExp(parseNode * pn, Symbol * sym,Attribute * att)
 {
-    vector<IR *> ir1 = parseTree(pn->nodes[0], sym, att);
-    vector<IR *> ir2 = parseTree(pn->nodes[1], sym, att);
     vector<IR *> ir;
-    ir.insert(ir.end(), ir1.begin(), ir1.end());
-    ir.insert(ir.end(), ir2.begin(), ir2.end());
     IR::IRType type;
     switch (pn->opType)
     {
@@ -405,6 +385,21 @@ vector<IR*> IRBuild::parseAlgoExp(parseNode * pn, Symbol * sym,Attribute * att)
         default:
             break;
     }
+    if(type == IR::ADD && pn->nodes[0]->parseType == parseNode::L_VAL && pn->nodes[1]->parseType == parseNode::L_VAL)
+    {
+        if(pn->nodes[0]->symbol->name == pn->nodes[1]->symbol->name)
+        {
+            vector<IR *> ir1 = parseTree(pn->nodes[0], sym, att);
+            IRItem::IRItemType type1 = ir1.back()->items[0]->type;
+            ir.insert(ir.end(), ir1.begin(), ir1.end());
+            ir.push_back(new IR(IR::ADD, {new IRItem(type1, ++varId), new IRItem(type1, ir1.back()->items[0]->iVal), new IRItem(type1, ir1.back()->items[0]->iVal)}));
+            return ir;
+        }
+    }
+    vector<IR *> ir1 = parseTree(pn->nodes[0], sym, att);
+    vector<IR *> ir2 = parseTree(pn->nodes[1], sym, att);
+    ir.insert(ir.end(), ir1.begin(), ir1.end());
+    ir.insert(ir.end(), ir2.begin(), ir2.end());
     IRItem::IRItemType type1 = ir1.back()->items[0]->type;
     IRItem::IRItemType type2 = ir2.back()->items[0]->type;
     ++varId;
@@ -515,25 +510,16 @@ vector<IR*> IRBuild::parseUnaryExp(parseNode* pn, Symbol * sym,Attribute * att) 
     switch (pn->opType)
     {
         case parseNode::F2I:
-            ir.push_back(new IR(
-                    IR::F2I, {new IRItem(IRItem::IVAR, ++varId),
-                              new IRItem(IRItem::FVAR, ir.back()->items[0]->iVal)}));
+            ir.push_back(new IR( IR::F2I, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::FVAR, ir.back()->items[0]->iVal)}));
             break;
         case parseNode::I2F:
-            ir.push_back(new IR(
-                    IR::I2F, {new IRItem(IRItem::FVAR, ++varId),
-                              new IRItem(IRItem::IVAR, ir.back()->items[0]->iVal)}));
+            ir.push_back(new IR( IR::I2F, {new IRItem(IRItem::FVAR, ++varId), new IRItem(IRItem::IVAR, ir.back()->items[0]->iVal)}));
             break;
         case parseNode::NOT:
-            ir.push_back(new IR(IR::NOT, {new IRItem(IRItem::IVAR, ++varId),
-                                          new IRItem(ir.back()->items[0]->type,
-                                                     ir.back()->items[0]->iVal)}));
+            ir.push_back(new IR(IR::NOT, {new IRItem(IRItem::IVAR, ++varId), new IRItem(ir.back()->items[0]->type, ir.back()->items[0]->iVal)}));
             break;
         case parseNode::NEG:
-            ir.push_back(new IR(
-                    IR::NEG,
-                    {new IRItem(ir.back()->items[0]->type, ++varId),
-                     new IRItem(ir.back()->items[0]->type, ir.back()->items[0]->iVal)}));
+            ir.push_back(new IR( IR::NEG, {new IRItem(ir.back()->items[0]->type, ++varId), new IRItem(ir.back()->items[0]->type, ir.back()->items[0]->iVal)}));
             break;
         default:
             break;
@@ -600,56 +586,39 @@ vector<Symbol* > IRBuild::getSymtemFunc() {
     vector<Symbol *> symbols;
     func = new Symbol(Symbol::FUNC, Symbol::INT, "getint", vector<Symbol *>());
     symbols.push_back(func);
-    // getch
     func = new Symbol(Symbol::FUNC, Symbol::INT, "getch", vector<Symbol *>());
     symbols.push_back(func);
-    // getarray
     param1 = new Symbol(Symbol::PARAM, Symbol::INT, "a", vector<int>{-1});
-    func = new Symbol(Symbol::FUNC, Symbol::INT, "getarray",
-                      vector<Symbol *>{param1});
+    func = new Symbol(Symbol::FUNC, Symbol::INT, "getarray", vector<Symbol *>{param1});
     symbols.push_back(func);
-    // getfloat
-    func =
-            new Symbol(Symbol::FUNC, Symbol::FLOAT, "getfloat", vector<Symbol *>());
+    func = new Symbol(Symbol::FUNC, Symbol::FLOAT, "getfloat", vector<Symbol *>());
     symbols.push_back(func);
-    // getfarray
     param1 = new Symbol(Symbol::PARAM, Symbol::FLOAT, "a", vector<int>{-1});
-    func = new Symbol(Symbol::FUNC, Symbol::INT, "getfarray",
-                      vector<Symbol *>{param1});
+    func = new Symbol(Symbol::FUNC, Symbol::INT, "getfarray", vector<Symbol *>{param1});
     symbols.push_back(func);
-    // putint
     param1 = new Symbol(Symbol::PARAM, Symbol::INT, "a", vector<int>());
-    func = new Symbol(Symbol::FUNC, Symbol::VOID, "putint",
-                      vector<Symbol *>{param1});
+    func = new Symbol(Symbol::FUNC, Symbol::VOID, "putint", vector<Symbol *>{param1});
     symbols.push_back(func);
-    // putch
     param1 = new Symbol(Symbol::PARAM, Symbol::INT, "a", vector<int>());
-    func =
-            new Symbol(Symbol::FUNC, Symbol::VOID, "putch", vector<Symbol *>{param1});
+    func = new Symbol(Symbol::FUNC, Symbol::VOID, "putch", vector<Symbol *>{param1});
     symbols.push_back(func);
-    // putarray
     param1 = new Symbol(Symbol::PARAM, Symbol::INT, "n", vector<int>());
     param2 = new Symbol(Symbol::PARAM, Symbol::INT, "a", vector<int>{-1});
     func = new Symbol(Symbol::FUNC, Symbol::VOID, "putarray", vector<Symbol *>{param1, param2});
     symbols.push_back(func);
-    // putfloat
     param1 = new Symbol(Symbol::PARAM, Symbol::FLOAT, "a", vector<int>());
     func = new Symbol(Symbol::FUNC, Symbol::VOID, "putfloat", vector<Symbol *>{param1});
     symbols.push_back(func);
-    // putfarray
     param1 = new Symbol(Symbol::PARAM, Symbol::INT, "n", vector<int>());
     param2 = new Symbol(Symbol::PARAM, Symbol::FLOAT, "a", vector<int>{-1});
     func = new Symbol(Symbol::FUNC, Symbol::VOID, "putfarray", vector<Symbol *>{param1, param2});
     symbols.push_back(func);
-
     param1 = new Symbol(Symbol::PARAM, Symbol::STRING, "format");
     param2 = new Symbol(Symbol::PARAMLIST, Symbol::LIST, "paramList", vector<Symbol *>());
     func = new Symbol(Symbol::FUNC, Symbol::VOID, "putf", vector<Symbol *>{param1, param2});
     symbols.push_back(func);
-    // _sysy_starttime
     func = new Symbol(Symbol::FUNC, Symbol::VOID, "_sysy_starttime", vector<Symbol *>());
     symbols.push_back(func);
-    // _sysy_stoptime
     func = new Symbol(Symbol::FUNC, Symbol::VOID, "_sysy_stoptime", vector<Symbol *>());
     symbols.push_back(func);
     return symbols;
