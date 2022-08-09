@@ -55,8 +55,8 @@ public:
     explicit tokenInfo(tokenType sym);
     tokenType getSym();
     string getName();
-    [[nodiscard]] int getValue() const;
-    [[nodiscard]] float getFvalue() const;
+    int getValue() const;
+    float getFvalue() const;
     void setName(string na);
     void setValue(int i);
     void setFvalue(float i);
