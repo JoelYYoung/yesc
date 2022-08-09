@@ -387,7 +387,7 @@ vector<IR*> IRBuild::parseAlgoExp(parseNode * pn, Symbol * sym,Attribute * att)
     }
     if(type == IR::ADD && pn->nodes[0]->parseType == parseNode::L_VAL && pn->nodes[1]->parseType == parseNode::L_VAL)
     {
-        if(pn->nodes[0]->symbol->name == pn->nodes[1]->symbol->name)
+        if ((pn->nodes[0]->symbol->name == pn->nodes[1]->symbol->name) && (pn->nodes[0]->symbol->dimensions.size() == 0))
         {
             vector<IR *> ir1 = parseTree(pn->nodes[0], sym, att);
             IRItem::IRItemType type1 = ir1.back()->items[0]->type;
