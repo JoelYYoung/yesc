@@ -334,7 +334,7 @@ template <typename T> void Analyse::parseConstInitVal(vector<int> array, unorder
       index[d]++;
     }
     for (int i = array.size() - 1; i >= 0; i--) {
-      if(index[i] == array[i]
+      if(index[i] == array[i])
       {
           index[i] = 0;
           if (i == 0)
