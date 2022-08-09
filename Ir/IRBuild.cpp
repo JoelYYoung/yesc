@@ -387,13 +387,28 @@ vector<IR*> IRBuild::parseAlgoExp(parseNode * pn, Symbol * sym,Attribute * att)
     }
     if(type == IR::ADD && pn->nodes[0]->parseType == parseNode::L_VAL && pn->nodes[1]->parseType == parseNode::L_VAL)
     {
-        if ((pn->nodes[0]->symbol->name == pn->nodes[1]->symbol->name) && (pn->nodes[0]->symbol->dimensions.size() == 0))
+        if (pn->nodes[0]->symbol->name == pn->nodes[1]->symbol->name)
         {
-            vector<IR *> ir1 = parseTree(pn->nodes[0], sym, att);
-            IRItem::IRItemType type1 = ir1.back()->items[0]->type;
-            ir.insert(ir.end(), ir1.begin(), ir1.end());
-            ir.push_back(new IR(IR::ADD, {new IRItem(type1, ++varId), new IRItem(type1, ir1.back()->items[0]->iVal), new IRItem(type1, ir1.back()->items[0]->iVal)}));
-            return ir;
+            int flag = 0;
+            if (pn->nodes[0]->nodes.size() != 0 && pn->nodes[1]->nodes.size() == pn->nodes[0]->nodes.size())
+            {
+                for (int i = 0; i < pn->nodes[0]->nodes.size(); i++)
+                {
+                    if(pn->nodes[0]->nodes[i]->iVal != pn->nodes[1]->nodes[i]->iVal)
+                    {
+                        flag = 1;
+                        break;
+                    }
+                }
+            }
+            if(flag == 0)
+            {
+                vector<IR *> ir1 = parseTree(pn->nodes[0], sym, att);
+                IRItem::IRItemType type1 = ir1.back()->items[0]->type;
+                ir.insert(ir.end(), ir1.begin(), ir1.end());
+                ir.push_back(new IR(IR::ADD, {new IRItem(type1, ++varId), new IRItem(type1, ir1.back()->items[0]->iVal), new IRItem(type1, ir1.back()->items[0]->iVal)}));
+                return ir;
+            }
         }
     }
     vector<IR *> ir1 = parseTree(pn->nodes[0], sym, att);
