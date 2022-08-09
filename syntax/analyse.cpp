@@ -73,48 +73,36 @@ void Analyse::initSymbols() {
   symbolStack.resize(1);
   Symbol *func;
   Symbol *param1, *param2;
-  // getint
+  unordered_map<string, Symbol *> mp;
   func = new Symbol(Symbol::FUNC, Symbol::INT, "getint", vector<Symbol *>());
   symbols.push_back(func);
   symbolStack.back()["getint"] = func;
-  // getch
   func = new Symbol(Symbol::FUNC, Symbol::INT, "getch", vector<Symbol *>());
   symbols.push_back(func);
   symbolStack.back()["getch"] = func;
-  // getarray
   param1 = new Symbol(Symbol::PARAM, Symbol::INT, "a", vector<int>{-1});
-  func = new Symbol(Symbol::FUNC, Symbol::INT, "getarray",
-                    vector<Symbol *>{param1});
+  func = new Symbol(Symbol::FUNC, Symbol::INT, "getarray", vector<Symbol *>{param1});
   symbols.push_back(func);
   symbols.push_back(param1);
   symbolStack.back()["getarray"] = func;
-  // getfloat
-  func =
-      new Symbol(Symbol::FUNC, Symbol::FLOAT, "getfloat", vector<Symbol *>());
+  func = new Symbol(Symbol::FUNC, Symbol::FLOAT, "getfloat", vector<Symbol *>());
   symbols.push_back(func);
   symbolStack.back()["getfloat"] = func;
-  // getfarray
   param1 = new Symbol(Symbol::PARAM, Symbol::FLOAT, "a", vector<int>{-1});
-  func = new Symbol(Symbol::FUNC, Symbol::INT, "getfarray",
-                    vector<Symbol *>{param1});
+  func = new Symbol(Symbol::FUNC, Symbol::INT, "getfarray", vector<Symbol *>{param1});
   symbols.push_back(func);
   symbols.push_back(param1);
   symbolStack.back()["getfarray"] = func;
-  // putint
   param1 = new Symbol(Symbol::PARAM, Symbol::INT, "a", vector<int>());
-  func = new Symbol(Symbol::FUNC, Symbol::VOID, "putint",
-                    vector<Symbol *>{param1});
+  func = new Symbol(Symbol::FUNC, Symbol::VOID, "putint", vector<Symbol *>{param1});
   symbols.push_back(func);
   symbols.push_back(param1);
   symbolStack.back()["putint"] = func;
-  // putch
   param1 = new Symbol(Symbol::PARAM, Symbol::INT, "a", vector<int>());
-  func =
-      new Symbol(Symbol::FUNC, Symbol::VOID, "putch", vector<Symbol *>{param1});
+  func = new Symbol(Symbol::FUNC, Symbol::VOID, "putch", vector<Symbol *>{param1});
   symbols.push_back(func);
   symbols.push_back(param1);
   symbolStack.back()["putch"] = func;
-  // putarray
   param1 = new Symbol(Symbol::PARAM, Symbol::INT, "n", vector<int>());
   param2 = new Symbol(Symbol::PARAM, Symbol::INT, "a", vector<int>{-1});
   func = new Symbol(Symbol::FUNC, Symbol::VOID, "putarray", vector<Symbol *>{param1, param2});
@@ -122,13 +110,11 @@ void Analyse::initSymbols() {
   symbols.push_back(param1);
   symbols.push_back(param2);
   symbolStack.back()["putarray"] = func;
-  // putfloat
   param1 = new Symbol(Symbol::PARAM, Symbol::FLOAT, "a", vector<int>());
   func = new Symbol(Symbol::FUNC, Symbol::VOID, "putfloat", vector<Symbol *>{param1});
   symbols.push_back(func);
   symbols.push_back(param1);
   symbolStack.back()["putfloat"] = func;
-  // putfarray
   param1 = new Symbol(Symbol::PARAM, Symbol::INT, "n", vector<int>());
   param2 = new Symbol(Symbol::PARAM, Symbol::FLOAT, "a", vector<int>{-1});
   func = new Symbol(Symbol::FUNC, Symbol::VOID, "putfarray",  vector<Symbol *>{param1, param2});
@@ -143,11 +129,9 @@ void Analyse::initSymbols() {
   symbols.push_back(param1);
   symbols.push_back(param2);
   symbolStack.back()["putf"] = func;
-  // _sysy_starttime
   func = new Symbol(Symbol::FUNC, Symbol::VOID, "_sysy_starttime", vector<Symbol *>());
   symbols.push_back(func);
   symbolStack.back()["starttime"] = func;
-  // _sysy_stoptime
   func = new Symbol(Symbol::FUNC, Symbol::VOID, "_sysy_stoptime", vector<Symbol *>());
   symbols.push_back(func);
   symbolStack.back()["stoptime"] = func;
@@ -351,7 +335,7 @@ template <typename T> void Analyse::parseConstInitVal(vector<int> array, unorder
     }
     return;
   }
-  vector<int> index(array.size(), 0);
+  vector<int> index(array.size());
   vector<parseNode *> stk(src->nodes.rbegin(), src->nodes.rend());
   while (!stk.empty()) {
     if (stk.back()->parseType != parseNode::INIT_VAL) {
@@ -375,7 +359,14 @@ template <typename T> void Analyse::parseConstInitVal(vector<int> array, unorder
         newArray.push_back(array[i]);
       int offset = 0;
       for (int i = 0; i < array.size(); i++)
-        offset = offset * array[i] + (i <= d ? index[i] : 0);
+      {
+        int add = 0;
+        if(i<=d)
+        {
+          add = index[i];
+        }
+        offset = offset * array[i] + add;
+      }
       parseConstInitVal(newArray, tMap, base + offset, stk.back());
       index[d]++;
     }
