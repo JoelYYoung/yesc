@@ -744,6 +744,27 @@ parseNode *Analyse::parseMulExp() {
     }
     opList.erase(opList.begin());
   }
+  if(items.size()==2 && opList[0] == parseNode::MUL)
+  {
+    if (items[0]->parseType == parseNode::INT_LITERAL && items[1]->parseType == parseNode::L_VAL)
+    {
+      if(items[0]->iVal == 2)
+      {
+        delete items[0];
+        items[0] = items[1];
+        opList[0] = parseNode::ADD;
+      }
+    }
+    else if(items[1]->parseType == parseNode::INT_LITERAL && items[0]->parseType == parseNode::L_VAL)
+    {
+      if(items[1]->iVal == 2)
+      {
+        delete items[1];
+        items[1] = items[0];
+        opList[0] = parseNode::ADD;
+      }
+    }
+  }
   parseNode *root = items[0];
   for (int i = 0; i < opList.size(); i++) {
     parseNode *left = root;
