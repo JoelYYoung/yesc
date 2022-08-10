@@ -50,6 +50,7 @@ public:
     void commonExpression();
     void deadExpDelete();
     void loadDelete();
+    void strToMov();
     IRBuild(parseNode *, vector<Symbol *> &);
     ~IRBuild();
 };
