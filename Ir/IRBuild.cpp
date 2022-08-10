@@ -889,3 +889,39 @@ void IRBuild::loadDelete()
         }
     }
 }
+
+void IRBuild::strToMov()
+{
+    for(pair<Symbol *, vector<IR *>> &func : funcList)
+    {
+        string name;
+        int flag = 0;
+        int varId;
+        int delsize = 0;
+        for (IR *ir : func.second)
+        {
+            if(ir->type == IR::STR && ir->items[1]->type == IRItem::SYMBOL)
+            {
+                name = ir->items[1]->symbol->name;
+                flag = 1;
+            }
+            else if(flag == 1 && ir->type == IR::LDR && ir->items[1]->type == IRItem::SYMBOL)
+            {
+                if(ir->items[0]->type == IRItem::IVAR && ir->items[1]->symbol->name == name && ir->items[1]->symbol->dimensions.size() == 0)
+                {
+                    int var1 = ir->items[0]->iVal;
+                    int id = ir->irId - func.second[0]->irId;
+                    func.second[id]->type = IR::MOV;
+                    func.second[id]->items[1] = new IRItem(IRItem::IVAR, id - 1);
+                    flag = 0;
+                }
+                else{
+                    flag = 0;
+                }
+            }
+            else{
+                flag = 0;
+            }
+        }
+    }
+}
