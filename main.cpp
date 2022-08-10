@@ -57,6 +57,7 @@ int main(int argc, char **argv)
     {
         Ir.commonExpression();
         Ir.deadExpDelete();
+        Ir.commonDelete();
         //Ir.loadDelete();
     }
     Ir.strToMov();

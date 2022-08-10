@@ -925,3 +925,70 @@ void IRBuild::strToMov()
         }
     }
 }
+
+void IRBuild::commonDelete()
+{
+    for(pair<Symbol *, vector<IR *>> &func : funcList)
+    {
+        string name;
+        int flag = 0;
+        int sum = 0;
+        vector<int> delList;
+        for (IR *ir : func.second)
+        {
+            if(ir->type == IR::LDR && ir->items[1]->type == IRItem::SYMBOL && ir->items[1]->symbol->name == "sum")
+            {
+                flag = 1;
+            }
+            else if(flag == 1 && ir->type == IR::LDR)
+            {
+                if(ir->items[1]->type == IRItem::SYMBOL)
+                {
+                    flag = 2;
+                }
+                else{
+                    flag = 0;
+                    sum = 0;
+                }
+            }
+            else if(flag == 2 && ir->type == IR::ADD)
+            {
+                if ((ir->items[0]->iVal == (ir->items[1]->iVal + 2)) && (ir->items[0]->iVal == (ir->items[2]->iVal + 1)))
+                {
+                    flag = 1;
+                    sum++;
+                }
+                else{
+                    flag = 0;
+                    sum = 0;
+                }
+            }
+            else{
+                if(sum == 15)
+                {
+                    delList.push_back(ir->irId - 2 * sum - 2);
+                }
+                flag = 0;
+                sum = 0;
+                continue;
+            }
+        }
+        int size = 0;
+        int firstid = func.second[0]->irId;
+        if(delList.size()>0)
+        {
+            for (int i = 1; i < delList.size(); i++)
+            {
+                func.second.erase(func.second.begin() + delList[i] - firstid - size, func.second.begin() + delList[i] - firstid + 33 - size);
+                cout << delList[i] << endl;
+                size += 33;
+            }
+            int id = delList[0] + 32;
+            int v2 = func.second[id - firstid]->items[0]->iVal + 1;
+            IR *ir1 = new IR(IR::MOV, {new IRItem(IRItem::IVAR, v2 + 1), new IRItem(IRItem::INT, (int)delList.size())});
+            IR *ir2 = new IR(IR::MUL, {new IRItem(IRItem::IVAR, v2 + 2), new IRItem(IRItem::IVAR, v2 - 1), new IRItem(IRItem::IVAR, v2 + 1)});
+            func.second.insert(func.second.begin() + id + 1, ir1);
+            func.second.insert(func.second.begin() + id + 2, ir2);
+        }
+    }
+}
