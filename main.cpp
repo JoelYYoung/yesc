@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     {
         Ir.commonExpression();
         Ir.deadExpDelete();
-        Ir.loadDelete();
+        //Ir.loadDelete();
     }
     Ir.loadDelete();
     //Ir.printIRs(true);
