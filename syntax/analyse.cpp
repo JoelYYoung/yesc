@@ -20,6 +20,44 @@ Analyse::~Analyse() {
     delete rootNode;
 }
 
+void Analyse::parseRoot() {
+  initSymbols();
+  vector<parseNode *> items;
+  while (head < tokenInfoList.size()) {
+    switch (tokenInfoList[head].getSym()) {
+    case tokenType::CONST: {
+      vector<parseNode *> consts = parseConstDef();
+      items.insert(items.end(), consts.begin(), consts.end());
+      break;
+    }
+    case tokenType::FLOAT:
+    case tokenType::INT:
+      switch (tokenInfoList[head + 2].getSym()) {
+      case tokenType::ASSIGN:
+      case tokenType::COMMA:
+      case tokenType::LB:
+      case tokenType::SEMICOLON: {
+        vector<parseNode *> vars = parseGlobalVarDef();
+        items.insert(items.end(), vars.begin(), vars.end());
+        break;
+      }
+      case tokenType::LP:
+        items.push_back(parseFuncDef());
+        break;
+      default:
+        break;
+      }
+      break;
+    case tokenType::VOID:
+      items.push_back(parseFuncDef());
+      break;
+    default:
+      break;
+    }
+  }
+  rootNode = new parseNode(parseNode::ROOT, false, items);
+}
+
 void Analyse::initSymbols() {
   symbolStack.resize(1);
   Symbol *func;
@@ -829,44 +867,6 @@ parseNode *Analyse::parseReturnStmt(Symbol *func) {
   getNextToken(1);
   val = util->typeTrans(func->dataType, val);
   return new parseNode(parseNode::RETURN_STMT, false, {val});
-}
-
-void Analyse::parseRoot() {
-  initSymbols();
-  vector<parseNode *> items;
-  while (head < tokenInfoList.size()) {
-    switch (tokenInfoList[head].getSym()) {
-    case tokenType::CONST: {
-      vector<parseNode *> consts = parseConstDef();
-      items.insert(items.end(), consts.begin(), consts.end());
-      break;
-    }
-    case tokenType::FLOAT:
-    case tokenType::INT:
-      switch (tokenInfoList[head + 2].getSym()) {
-      case tokenType::ASSIGN:
-      case tokenType::COMMA:
-      case tokenType::LB:
-      case tokenType::SEMICOLON: {
-        vector<parseNode *> vars = parseGlobalVarDef();
-        items.insert(items.end(), vars.begin(), vars.end());
-        break;
-      }
-      case tokenType::LP:
-        items.push_back(parseFuncDef());
-        break;
-      default:
-        break;
-      }
-      break;
-    case tokenType::VOID:
-      items.push_back(parseFuncDef());
-      break;
-    default:
-      break;
-    }
-  }
-  rootNode = new parseNode(parseNode::ROOT, false, items);
 }
 
 parseNode *Analyse::parseStmt(Symbol *func) {
