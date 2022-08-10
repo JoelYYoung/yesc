@@ -853,3 +853,39 @@ void IRBuild::deadExpDelete()
         }
     }
 }
+
+void IRBuild::loadDelete()
+{
+    for(pair<Symbol *, vector<IR *>> &func : funcList)
+    {
+        string name;
+        int flag = 0;
+        int varId;
+        int delsize = 0;
+        vector<int> delList;
+        for (IR *ir : func.second)
+        {
+            if(ir->type == IR::LDR && ir->items[1]->type == IRItem::SYMBOL)
+            {
+                name = ir->items[1]->symbol->name;
+                flag = 1;
+            }
+            else if(flag == 1 && ir->type == IR::STR && ir->items[1]->type == IRItem::SYMBOL)
+            {
+                if(ir->items[1]->symbol->name == name)
+                {
+                    delList.push_back(ir->irId - 1 - func.second[0]->irId);
+                    flag = 0;
+                }
+            }
+            else{
+                flag = 0;
+            }
+        }
+        for (int i : delList)
+        {
+            func.second.erase(func.second.begin() + i - delsize);
+            delsize++;
+        }
+    }
+}

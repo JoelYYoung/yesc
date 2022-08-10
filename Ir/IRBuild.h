@@ -49,6 +49,7 @@ public:
     void printBlocks();
     void commonExpression();
     void deadExpDelete();
+    void loadDelete();
     IRBuild(parseNode *, vector<Symbol *> &);
     ~IRBuild();
 };
