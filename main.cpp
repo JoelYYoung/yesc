@@ -59,7 +59,6 @@ int main(int argc, char **argv)
         Ir.deadExpDelete();
         //Ir.loadDelete();
     }
-    Ir.strToMov();
     //Ir.printIRs(true);
     Assembler assembler = Assembler(Ir);
     assembler.generateAsm();
