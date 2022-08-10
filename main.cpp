@@ -59,7 +59,7 @@ int main(int argc, char **argv)
         Ir.deadExpDelete();
         //Ir.loadDelete();
     }
-    Ir.loadDelete();
+    //Ir.loadDelete();
     //Ir.printIRs(true);
     Assembler assembler = Assembler(Ir);
     assembler.generateAsm();
