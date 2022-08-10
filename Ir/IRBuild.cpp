@@ -912,7 +912,7 @@ void IRBuild::strToMov()
                     int var1 = ir->items[0]->iVal;
                     int id = ir->irId - func.second[0]->irId;
                     func.second[id]->type = IR::MOV;
-                    func.second[id]->items[1] = new IRItem(IRItem::IVAR, id - 1);
+                    func.second[id]->items[1] = new IRItem(IRItem::IVAR,var1 - 1);
                     flag = 0;
                 }
                 else{
