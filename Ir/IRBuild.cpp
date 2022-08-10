@@ -987,8 +987,9 @@ void IRBuild::commonDelete()
             int v2 = func.second[id - firstid]->items[0]->iVal + 1;
             IR *ir1 = new IR(IR::MOV, {new IRItem(IRItem::IVAR, v2 + 1), new IRItem(IRItem::INT, (int)delList.size())});
             IR *ir2 = new IR(IR::MUL, {new IRItem(IRItem::IVAR, v2 + 2), new IRItem(IRItem::IVAR, v2 - 1), new IRItem(IRItem::IVAR, v2 + 1)});
-            func.second.insert(func.second.begin() + id + 1, ir1);
-            func.second.insert(func.second.begin() + id + 2, ir2);
+            func.second.insert(func.second.begin() + id, ir1);
+            func.second.insert(func.second.begin() + id + 1, ir2);
+            func.second[id - firstid + 2]->items[0]->iVal = v2 + 2;
         }
     }
 }
