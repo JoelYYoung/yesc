@@ -20,58 +20,6 @@ Analyse::~Analyse() {
     delete rootNode;
 }
 
-void Analyse::allocInitVal(vector<int> array,  unordered_map<int, parseNode *> &exps, int base, parseNode *src) {
-  vector<int> index(array.size(), 0);
-  vector<parseNode *> stk(src->nodes.rbegin(), src->nodes.rend());
-  while (!stk.empty()) {
-    if (stk.back()->parseType != parseNode::INIT_VAL) {
-      int offset = 0;
-      for (int i = 0; i < array.size(); i++)
-        offset = offset * array[i] + index[i];
-      if (stk.back())
-        exps[base + offset] = stk.back();
-      index.back()++;
-    } else {
-      int d = array.size() - 1;
-      while (d > 0 && !index[d])
-        d--;
-      vector<int> newArray;
-      for (int i = d + 1; i < array.size(); i++)
-        newArray.push_back(array[i]);
-      int offset = 0;
-      for (int i = 0; i < array.size(); i++)
-      {
-        int add = 0;
-        if(i<=d)
-        {
-          add = index[i];
-        }
-        offset = offset * array[i] + add;
-      }
-      allocInitVal(newArray, exps, base + offset, stk.back());
-      index[d]++;
-    }
-    for (int i = array.size() - 1; i >= 0; i--) {
-      if(index[i] == array[i])
-      {
-          index[i] = 0;
-          if (i == 0)
-            return;
-          index[i - 1]++;
-      }
-    }
-    stk.pop_back();
-  }
-}
-
-void Analyse::deleteInitVal(parseNode *root) {
-  for (int i = 0; i < root->nodes.size(); i++)
-    if (root->nodes[i]->parseType == parseNode::INIT_VAL)
-      deleteInitVal(root->nodes[i]);
-  root->nodes.clear();
-  delete root;
-}
-
 void Analyse::initSymbols() {
   symbolStack.resize(1);
   Symbol *func;
@@ -147,65 +95,6 @@ Symbol *Analyse::lastSymbol(string &name) {
   cerr << "no such function: " << name << endl;
   exit(-1);
   return nullptr;
-}
-
-parseNode *Analyse::parseAddExp() {
-  vector<parseNode *> items;
-  vector<parseNode::OPType> opList;
-  items.push_back(parseMulExp());
-  while (tokenInfoList[head].getSym() == tokenType::MINUS || tokenInfoList[head].getSym() == tokenType::PLUS) {
-    opList.push_back(tokenInfoList[head].getSym() == tokenType::MINUS ? parseNode::SUB : parseNode::ADD);
-    getNextToken(1);
-    items.push_back(parseMulExp());
-  }
-  while (!opList.empty()) {
-    if (util->judgeItem(items))
-      break;
-    Constant cons = util->deleteConst(items);
-    delete items[0];
-    delete items[1];
-    items.erase(items.begin() + 1);
-    int isInt1 = cons.isInt1;
-    int isInt2 = cons.isInt2;
-    int intVal1 = cons.intVal1;
-    int intVal2 = cons.intVal2;
-    float floatVal1 = cons.floatVal1;
-    float floatVal2 = cons.floatVal2;
-    items[0] = opList[0] == parseNode::ADD ? (isInt1 && isInt2 ? new parseNode(intVal1 + intVal2) : new parseNode((isInt1 ? intVal1 : floatVal1) + (isInt2 ? intVal2 : floatVal2)))
-                                           : (isInt1 && isInt2 ? new parseNode(intVal1 - intVal2) : new parseNode((isInt1 ? intVal1 : floatVal1) - (isInt2 ? intVal2 : floatVal2)));
-    opList.erase(opList.begin());
-  }
-  for (int i = 0; i < opList.size(); i++)
-  {
-    if (items[i + 1]->parseType == parseNode::UNARY_EXP && items[i + 1]->opType == parseNode::NEG) {
-      parseNode *val = items[i + 1]->nodes[0];
-      items[i + 1]->nodes[0] = nullptr;
-      delete items[i + 1];
-      items[i + 1] = val;
-      if(opList[i] == parseNode::ADD)
-      {
-        opList[i] = parseNode::SUB;
-      }
-      else{
-        opList[i] = parseNode::ADD;
-      }
-    }
-  }
-  parseNode *root = items[0];
-  for (int i = 0; i < opList.size(); i++) {
-      parseNode *left = root;
-      parseNode *right = items[i + 1];
-      if (!left->isFloat && right->isFloat)
-      {
-        left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
-      }
-      if (left->isFloat && !right->isFloat)
-      {
-        right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});
-      }
-      root = new parseNode(parseNode::BINARY_EXP, left->isFloat, opList[i], {left, right});
-  }
-  return root;
 }
 
 parseNode *Analyse::parseAssignStmt() {
@@ -307,27 +196,29 @@ vector<parseNode *> Analyse::parseConstDef() {
   return consts;
 }
 
-template <typename T> void Analyse::parseConstInitVal(vector<int> array, unordered_map<int, T> &tMap, int base, parseNode *src) {
+template <typename T> void Analyse::parseConstInitVal(vector<int> array, unordered_map<int, T> &arraymap, int base, parseNode *src) {
   vector<int> index(array.size());
-  vector<parseNode *> stk(src->nodes.rbegin(), src->nodes.rend());
-  while (!stk.empty()) {
-    if (stk.back()->parseType != parseNode::INIT_VAL) {
+  vector<parseNode *> initList(src->nodes.rbegin(), src->nodes.rend());
+  while (!initList.empty()) {
+    if (initList.back()->parseType != parseNode::INIT_VAL) {
       int offset = 0;
       for (int i = 0; i < array.size(); i++)
         offset = offset * array[i] + index[i];
-      if (stk.back()->parseType == parseNode::INT_LITERAL) {
-          tMap[base + offset] = stk.back()->iVal;
+      if (initList.back()->parseType == parseNode::INT_LITERAL) {
+          arraymap[base + offset] = initList.back()->iVal;
       } else {
-          tMap[base + offset] = stk.back()->fVal;
+          arraymap[base + offset] = initList.back()->fVal;
       }
       index.back()++;
     } else {
       int d = array.size() - 1;
       while (d > 0 && !index[d])
+      {
         d--;
-      vector<int> newArray;
+      }
+      vector<int> dimension;
       for (int i = d + 1; i < array.size(); i++)
-        newArray.push_back(array[i]);
+        dimension.push_back(array[i]);
       int offset = 0;
       for (int i = 0; i < array.size(); i++)
       {
@@ -338,7 +229,7 @@ template <typename T> void Analyse::parseConstInitVal(vector<int> array, unorder
         }
         offset = offset * array[i] + add;
       }
-      parseConstInitVal(newArray, tMap, base + offset, stk.back());
+      parseConstInitVal(dimension, arraymap, base + offset, initList.back());
       index[d]++;
     }
     for (int i = array.size() - 1; i >= 0; i--) {
@@ -350,8 +241,267 @@ template <typename T> void Analyse::parseConstInitVal(vector<int> array, unorder
           index[i - 1]++;
       }
     }
-    stk.pop_back();
+    initList.pop_back();
   }
+}
+
+void Analyse::allocInitVal(vector<int> array,  unordered_map<int, parseNode *> &exps, int base, parseNode *src) {
+  vector<int> index(array.size());
+  vector<parseNode *> initList(src->nodes.rbegin(), src->nodes.rend());
+  while (!initList.empty()) {
+    if (initList.back()->parseType != parseNode::INIT_VAL) {
+      int offset = 0;
+      for (int i = 0; i < array.size(); i++)
+        offset = offset * array[i] + index[i];
+      if (initList.back())
+        exps[base + offset] = initList.back();
+      index.back()++;
+    } else {
+      int d = array.size() - 1;
+      while (d > 0 && !index[d])
+        d--;
+      vector<int> dimension;
+      for (int i = d + 1; i < array.size(); i++)
+        dimension.push_back(array[i]);
+      int offset = 0;
+      for (int i = 0; i < array.size(); i++)
+      {
+        int add = 0;
+        if(i<=d)
+        {
+          add = index[i];
+        }
+        offset = offset * array[i] + add;
+      }
+      allocInitVal(dimension, exps, base + offset, initList.back());
+      index[d]++;
+    }
+    for (int i = array.size() - 1; i >= 0; i--) {
+      if(index[i] == array[i])
+      {
+          index[i] = 0;
+          if (i == 0)
+            return;
+          index[i - 1]++;
+      }
+    }
+    initList.pop_back();
+  }
+}
+
+void Analyse::deleteInitVal(parseNode *root) {
+  for (int i = 0; i < root->nodes.size(); i++)
+    if (root->nodes[i]->parseType == parseNode::INIT_VAL)
+      deleteInitVal(root->nodes[i]);
+  root->nodes.clear();
+  delete root;
+}
+
+parseNode *Analyse::parseAddExp() {
+  vector<parseNode *> items;
+  vector<parseNode::OPType> opList;
+  items.push_back(parseMulExp());
+  while (tokenInfoList[head].getSym() == tokenType::MINUS || tokenInfoList[head].getSym() == tokenType::PLUS) {
+    opList.push_back(tokenInfoList[head].getSym() == tokenType::MINUS ? parseNode::SUB : parseNode::ADD);
+    getNextToken(1);
+    items.push_back(parseMulExp());
+  }
+  while (!opList.empty()) {
+    if (util->judgeItem(items))
+      break;
+    Constant cons = util->deleteConst(items);
+    delete items[0];
+    delete items[1];
+    items.erase(items.begin() + 1);
+    int isInt1 = cons.isInt1;
+    int isInt2 = cons.isInt2;
+    int intVal1 = cons.intVal1;
+    int intVal2 = cons.intVal2;
+    float floatVal1 = cons.floatVal1;
+    float floatVal2 = cons.floatVal2;
+    items[0] = opList[0] == parseNode::ADD ? (isInt1 && isInt2 ? new parseNode(intVal1 + intVal2) : new parseNode((isInt1 ? intVal1 : floatVal1) + (isInt2 ? intVal2 : floatVal2)))
+                                           : (isInt1 && isInt2 ? new parseNode(intVal1 - intVal2) : new parseNode((isInt1 ? intVal1 : floatVal1) - (isInt2 ? intVal2 : floatVal2)));
+    opList.erase(opList.begin());
+  }
+  for (int i = 0; i < opList.size(); i++)
+  {
+    if (items[i + 1]->parseType == parseNode::UNARY_EXP && items[i + 1]->opType == parseNode::NEG) {
+      parseNode *val = items[i + 1]->nodes[0];
+      items[i + 1]->nodes[0] = nullptr;
+      delete items[i + 1];
+      items[i + 1] = val;
+      if(opList[i] == parseNode::ADD)
+      {
+        opList[i] = parseNode::SUB;
+      }
+      else{
+        opList[i] = parseNode::ADD;
+      }
+    }
+  }
+  parseNode *root = items[0];
+  for (int i = 0; i < opList.size(); i++) {
+      parseNode *left = root;
+      parseNode *right = items[i + 1];
+      if (!left->isFloat && right->isFloat)
+      {
+        left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
+      }
+      if (left->isFloat && !right->isFloat)
+      {
+        right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});
+      }
+      root = new parseNode(parseNode::BINARY_EXP, left->isFloat, opList[i], {left, right});
+  }
+  return root;
+}
+
+parseNode *Analyse::parseMulExp() {
+  vector<parseNode *> items;
+  vector<parseNode::OPType> opList;
+  items.push_back(parseUnaryExp());
+  while (tokenInfoList[head].getSym() == tokenType::MUL || tokenInfoList[head].getSym() == tokenType::DIV || tokenInfoList[head].getSym() == tokenType::MOD) {
+    switch (tokenInfoList[head].getSym()) {
+    case tokenType::MUL:
+      opList.push_back(parseNode::MUL);
+      break;
+    case tokenType::DIV:
+      opList.push_back(parseNode::DIV);
+      break;
+    case tokenType::MOD:
+      opList.push_back(parseNode::MOD);
+      break;
+    default:
+      break;
+    }
+    getNextToken(1);
+    items.push_back(parseUnaryExp());
+  }
+  while (!opList.empty()) {
+    if (util->judgeItem(items))
+      break;
+    Constant cons = util->deleteConst(items);
+    delete items[0];
+    delete items[1];
+    items.erase(items.begin() + 1);
+    int isInt1 = cons.isInt1;
+    int isInt2 = cons.isInt2;
+    int intVal1 = cons.intVal1;
+    int intVal2 = cons.intVal2;
+    float floatVal1 = cons.floatVal1;
+    float floatVal2 = cons.floatVal2;
+    switch (opList[0]) {
+    case parseNode::MUL:
+      items[0] = isInt1 && isInt2 ? new parseNode(intVal1 * intVal2) : new parseNode((isInt1 ? intVal1 : floatVal1) * (isInt2 ? intVal2 : floatVal2));
+      break;
+    case parseNode::DIV:
+      items[0] = isInt1 && isInt2 ? new parseNode(intVal1 / intVal2) : new parseNode((isInt1 ? intVal1 : floatVal1) / (isInt2 ? intVal2 : floatVal2));
+      break;
+    case parseNode::MOD:
+      items[0] = new parseNode(intVal1 % intVal2);
+      break;
+    default:
+      break;
+    }
+    opList.erase(opList.begin());
+  }
+  if(items.size()==2 && opList[0] == parseNode::MUL)
+  {
+    if (items[0]->parseType == parseNode::INT_LITERAL && items[1]->parseType == parseNode::L_VAL)
+    {
+      if(items[0]->iVal == 2)
+      {
+        delete items[0];
+        items[0] = items[1];
+        opList[0] = parseNode::ADD;
+      }
+    }
+    else if(items[1]->parseType == parseNode::INT_LITERAL && items[0]->parseType == parseNode::L_VAL)
+    {
+      if(items[1]->iVal == 2)
+      {
+        delete items[1];
+        items[1] = items[0];
+        opList[0] = parseNode::ADD;
+      }
+    }
+  }
+  parseNode *root = items[0];
+  for (int i = 0; i < opList.size(); i++) {
+    parseNode *left = root;
+    parseNode *right = items[i + 1];
+    if (!left->isFloat && right->isFloat)
+    {
+      left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
+    }
+    if (left->isFloat && !right->isFloat)
+      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});
+    root = new parseNode(parseNode::BINARY_EXP, left->isFloat, opList[i], {left, right});
+  }
+  return root;
+}
+
+parseNode *Analyse::parseRelExp() {
+  vector<parseNode *> items;
+  vector<parseNode::OPType> opList;
+  items.push_back(parseAddExp());
+  while (tokenInfoList[head].getSym() == tokenType::GE || tokenInfoList[head].getSym() == tokenType::GT ||
+         tokenInfoList[head].getSym() == tokenType::LE || tokenInfoList[head].getSym() == tokenType::LT) {
+    switch (tokenInfoList[head].getSym()) {
+    case tokenType::GE:
+      opList.push_back(parseNode::GE);
+      break;
+    case tokenType::GT:
+      opList.push_back(parseNode::GT);
+      break;
+    case tokenType::LE:
+      opList.push_back(parseNode::LE);
+      break;
+    case tokenType::LT:
+      opList.push_back(parseNode::LT);
+      break;
+    default:
+      break;
+    }
+    getNextToken(1);
+    items.push_back(parseAddExp());
+  }
+  while (!opList.empty()) {
+    if (util->judgeItem(items))
+      break;
+    Constant cons = util->deleteConst(items);
+    delete items[0];
+    delete items[1];
+    items.erase(items.begin() + 1);
+    switch (opList[0]) {
+    case parseNode::LE:
+      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) <= (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
+      break;
+    case parseNode::LT:
+      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) < (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
+      break;
+    case parseNode::GE:
+      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) >= (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
+      break;
+    case parseNode::GT:
+      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) > (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
+      break;
+    default:
+      break;
+    }
+    opList.erase(opList.begin());
+  }
+  parseNode *root = items[0];
+  for (int i = 0; i < opList.size(); i++) {
+    parseNode *left = root;
+    parseNode *right = items[i + 1];
+    if (!left->isFloat && right->isFloat)
+      left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
+    if (left->isFloat && !right->isFloat)
+      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});
+    root = new parseNode(parseNode::BINARY_EXP, false, opList[i], {left, right});
+  }
+  return root;
 }
 
 parseNode *Analyse::parseEqExp() {
@@ -448,6 +598,22 @@ parseNode *Analyse::parseFormat() {
   return new parseNode(tokenInfoList[head].getName());
 }
 
+Symbol *Analyse::parseFuncParam() {
+  Symbol::DataType type =
+      tokenInfoList[head].getSym() == tokenType::INT ? Symbol::INT : Symbol::FLOAT;
+  getNextToken(1);
+  string name = tokenInfoList[head].getName();
+  getNextToken(1);
+  if (tokenInfoList[head].getSym() != tokenType::LB)
+    return new Symbol(Symbol::PARAM, type, name);
+  vector<int> dimensions;
+  dimensions.push_back(-1);
+  getNextToken(2);
+  vector<int> arr = arrayAnalyse();
+  dimensions.insert(dimensions.end(), arr.begin(), arr.end());
+  return new Symbol(Symbol::PARAM, type, name, dimensions);
+}
+
 parseNode *Analyse::parseFuncDef() {
   Symbol::DataType type = Symbol::INT;
   switch (tokenInfoList[head].getSym()) {
@@ -484,22 +650,6 @@ parseNode *Analyse::parseFuncDef() {
   parseNode *body = parseBlock(symbol);
   symbolStack.pop_back();
   return new parseNode(parseNode::FUNC_DEF, false, symbol, {body});
-}
-
-Symbol *Analyse::parseFuncParam() {
-  Symbol::DataType type =
-      tokenInfoList[head].getSym() == tokenType::INT ? Symbol::INT : Symbol::FLOAT;
-  getNextToken(1);
-  string name = tokenInfoList[head].getName();
-  getNextToken(1);
-  if (tokenInfoList[head].getSym() != tokenType::LB)
-    return new Symbol(Symbol::PARAM, type, name);
-  vector<int> dimensions;
-  dimensions.push_back(-1);
-  getNextToken(2);
-  vector<int> arr = arrayAnalyse();
-  dimensions.insert(dimensions.end(), arr.begin(), arr.end());
-  return new Symbol(Symbol::PARAM, type, name, dimensions);
 }
 
 vector<parseNode *> Analyse::parseGlobalVarDef() {
@@ -667,154 +817,6 @@ parseNode *Analyse::parseLVal() {
       return new parseNode(symbol->fMap.find(offset) == symbol->fMap.end() ? 0 : symbol->fMap[offset]);
   }
   return new parseNode(parseNode::L_VAL, symbol->dataType == Symbol::FLOAT, symbol, nodeList);
-}
-
-parseNode *Analyse::parseMulExp() {
-  vector<parseNode *> items;
-  vector<parseNode::OPType> opList;
-  items.push_back(parseUnaryExp());
-  while (tokenInfoList[head].getSym() == tokenType::MUL || tokenInfoList[head].getSym() == tokenType::DIV || tokenInfoList[head].getSym() == tokenType::MOD) {
-    switch (tokenInfoList[head].getSym()) {
-    case tokenType::MUL:
-      opList.push_back(parseNode::MUL);
-      break;
-    case tokenType::DIV:
-      opList.push_back(parseNode::DIV);
-      break;
-    case tokenType::MOD:
-      opList.push_back(parseNode::MOD);
-      break;
-    default:
-      break;
-    }
-    getNextToken(1);
-    items.push_back(parseUnaryExp());
-  }
-  while (!opList.empty()) {
-    if (util->judgeItem(items))
-      break;
-    Constant cons = util->deleteConst(items);
-    delete items[0];
-    delete items[1];
-    items.erase(items.begin() + 1);
-    int isInt1 = cons.isInt1;
-    int isInt2 = cons.isInt2;
-    int intVal1 = cons.intVal1;
-    int intVal2 = cons.intVal2;
-    float floatVal1 = cons.floatVal1;
-    float floatVal2 = cons.floatVal2;
-    switch (opList[0]) {
-    case parseNode::MUL:
-      items[0] = isInt1 && isInt2 ? new parseNode(intVal1 * intVal2) : new parseNode((isInt1 ? intVal1 : floatVal1) * (isInt2 ? intVal2 : floatVal2));
-      break;
-    case parseNode::DIV:
-      items[0] = isInt1 && isInt2 ? new parseNode(intVal1 / intVal2) : new parseNode((isInt1 ? intVal1 : floatVal1) / (isInt2 ? intVal2 : floatVal2));
-      break;
-    case parseNode::MOD:
-      items[0] = new parseNode(intVal1 % intVal2);
-      break;
-    default:
-      break;
-    }
-    opList.erase(opList.begin());
-  }
-  if(items.size()==2 && opList[0] == parseNode::MUL)
-  {
-    if (items[0]->parseType == parseNode::INT_LITERAL && items[1]->parseType == parseNode::L_VAL)
-    {
-      if(items[0]->iVal == 2)
-      {
-        delete items[0];
-        items[0] = items[1];
-        opList[0] = parseNode::ADD;
-      }
-    }
-    else if(items[1]->parseType == parseNode::INT_LITERAL && items[0]->parseType == parseNode::L_VAL)
-    {
-      if(items[1]->iVal == 2)
-      {
-        delete items[1];
-        items[1] = items[0];
-        opList[0] = parseNode::ADD;
-      }
-    }
-  }
-  parseNode *root = items[0];
-  for (int i = 0; i < opList.size(); i++) {
-    parseNode *left = root;
-    parseNode *right = items[i + 1];
-    if (!left->isFloat && right->isFloat)
-    {
-      left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
-    }
-    if (left->isFloat && !right->isFloat)
-      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});
-    root = new parseNode(parseNode::BINARY_EXP, left->isFloat, opList[i], {left, right});
-  }
-  return root;
-}
-
-parseNode *Analyse::parseRelExp() {
-  vector<parseNode *> items;
-  vector<parseNode::OPType> opList;
-  items.push_back(parseAddExp());
-  while (tokenInfoList[head].getSym() == tokenType::GE || tokenInfoList[head].getSym() == tokenType::GT ||
-         tokenInfoList[head].getSym() == tokenType::LE || tokenInfoList[head].getSym() == tokenType::LT) {
-    switch (tokenInfoList[head].getSym()) {
-    case tokenType::GE:
-      opList.push_back(parseNode::GE);
-      break;
-    case tokenType::GT:
-      opList.push_back(parseNode::GT);
-      break;
-    case tokenType::LE:
-      opList.push_back(parseNode::LE);
-      break;
-    case tokenType::LT:
-      opList.push_back(parseNode::LT);
-      break;
-    default:
-      break;
-    }
-    getNextToken(1);
-    items.push_back(parseAddExp());
-  }
-  while (!opList.empty()) {
-    if (util->judgeItem(items))
-      break;
-    Constant cons = util->deleteConst(items);
-    delete items[0];
-    delete items[1];
-    items.erase(items.begin() + 1);
-    switch (opList[0]) {
-    case parseNode::LE:
-      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) <= (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
-      break;
-    case parseNode::LT:
-      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) < (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
-      break;
-    case parseNode::GE:
-      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) >= (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
-      break;
-    case parseNode::GT:
-      items[0] = new parseNode((cons.isInt1 ? cons.intVal1 : cons.floatVal1) > (cons.isInt2 ? cons.intVal2 : cons.floatVal2));
-      break;
-    default:
-      break;
-    }
-    opList.erase(opList.begin());
-  }
-  parseNode *root = items[0];
-  for (int i = 0; i < opList.size(); i++) {
-    parseNode *left = root;
-    parseNode *right = items[i + 1];
-    if (!left->isFloat && right->isFloat)
-      left = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {left});
-    if (left->isFloat && !right->isFloat)
-      right = new parseNode(parseNode::UNARY_EXP, true, parseNode::I2F, {right});
-    root = new parseNode(parseNode::BINARY_EXP, false, opList[i], {left, right});
-  }
-  return root;
 }
 
 parseNode *Analyse::parseReturnStmt(Symbol *func) {
