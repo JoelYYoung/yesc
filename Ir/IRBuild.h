@@ -51,6 +51,7 @@ public:
     void deadExpDelete();
     void loadDelete();
     void strToMov();
+    void commonDelete();
     IRBuild(parseNode *, vector<Symbol *> &);
     ~IRBuild();
 };
