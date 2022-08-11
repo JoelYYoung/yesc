@@ -1870,7 +1870,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         }
                     }
 
-                    irAsmVectorMap[irId].push_back("BL __aeabi_fcmpne");
+                    irAsmVectorMap[irId].push_back("BL __aeabi_fcmpeq");
                     buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
@@ -1880,7 +1880,13 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    buffer << "MOVNE r" << allocater.getVarRegId(op1Id) << ", #1";
+
+                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", #0";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+
+                    buffer << "MOVEQ r" << allocater.getVarRegId(op1Id) << ", #1";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
