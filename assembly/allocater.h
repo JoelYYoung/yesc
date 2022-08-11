@@ -26,7 +26,7 @@ public:
     // constructor and destructor(default)
     Allocater(unordered_map<int, pair<int, int>> tmpVarLiveInterval, int funcLocalVarSize)
               : tmpVarLiveInterval(tmpVarLiveInterval), tmpVarStackOffset(0) , funcLocalVarSize(funcLocalVarSize),
-              freeRegister(set({4, 5, 6})){};
+              freeRegister(set({4, 5, 6, 7, 8, 9})){};
 
     // allocate for variable
     void allocateVar(int irId, vector<int> varIdList, vector<string> &extraInstruction);
