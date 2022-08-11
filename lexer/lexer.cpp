@@ -62,7 +62,7 @@ void getAnnotation(FILE *in){
     } else if(c == '/'){
         while (true) {
             c = fgetc(in);
-            if (c == '\n') {
+            if (c == '\n' || c == EOF) {
                 break;
             }
         }
