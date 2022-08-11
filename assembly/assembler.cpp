@@ -814,10 +814,24 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
 
                 // reserve registers pop r0-r3, lr, ip
                 if(paramStackSize != 0 || subSize !=0){
-                    buffer << "ADD sp, sp, #" << (paramStackSize+subSize) * 4;
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    buffer.clear();
-                    buffer.str("");
+                    int addStackNum = (paramStackSize+subSize) * 4;
+                    if (addStackNum < 255){
+                        buffer << "ADD sp, sp, #" << addStackNum;
+                        irAsmVectorMap[irId].push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                    }else{
+                        buffer << "MOVW r11, #:lower16:" << addStackNum;
+                        irAsmVectorMap[irId].push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                        buffer << "MOVT r11, #:upper16:" << addStackNum;
+                        irAsmVectorMap[irId].push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                        irAsmVectorMap[irId].push_back("ADD sp, sp, r11");
+                    }
+
                 }
 
                 if(nextIr->type == IR::MOV && nextIr->items[1]->type == IRItem::RETURN){
