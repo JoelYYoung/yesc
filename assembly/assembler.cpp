@@ -436,12 +436,29 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                             buffer.clear();
                             buffer.str("");
                         }else{  // parameter on stack
-                            buffer << "STR r" << allocater.getVarRegId(op1Id) << \
-                            ", [ip, #";
-                            irAsmVectorMap[irId].push_back(buffer.str());
-                            backFillList.push_back(tuple<int, int, int, Symbol *>(1, irId, irAsmVectorMap[irId].size()-1, op2->symbol));
-                            buffer.clear();
-                            buffer.str("");
+                            int locationId = funcParam.getLocationId(op2->symbol);
+                            if(locationId <= 50){
+                                buffer << "STR r" << allocater.getVarRegId(op1Id) << ", [ip, #";
+                                irAsmVectorMap[irId].push_back(buffer.str());
+                                backFillList.push_back(tuple<int, int, int, Symbol *>(1, irId, irAsmVectorMap[irId].size()-1, op2->symbol));
+                                buffer.clear();
+                                buffer.str("");
+                            }else{
+                                buffer << "MOVW r11, #:lower16:";
+                                irAsmVectorMap[irId].push_back(buffer.str());
+                                backFillList.push_back(tuple<int, int, int, Symbol *>(0, irId, irAsmVectorMap[irId].size()-1, op2->symbol));
+                                buffer.clear();
+                                buffer.str("");
+                                buffer << "MOVT r11, #:upper16:";
+                                irAsmVectorMap[irId].push_back(buffer.str());
+                                backFillList.push_back(tuple<int, int, int, Symbol *>(0, irId, irAsmVectorMap[irId].size()-1, op2->symbol));
+                                buffer.clear();
+                                buffer.str("");
+                                buffer << "STR r" << allocater.getVarRegId(op1Id) << ", [ip, r11]";
+                                irAsmVectorMap[irId].push_back(buffer.str());
+                                buffer.clear();
+                                buffer.str("");
+                            }
                         }
 
                     }else if(op2->symbol->symbolType == Symbol::LOCAL_VAR){
@@ -501,12 +518,30 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                             buffer.clear();
                             buffer.str("");
                         }else{  // parameter on stack
-                            buffer << "LDR r" << allocater.getVarRegId(op1Id) << \
-                            ", [ip, #";
-                            irAsmVectorMap[irId].push_back(buffer.str());
-                            backFillList.push_back(tuple<int, int, int, Symbol *>(1, irId, irAsmVectorMap[irId].size()-1, op2->symbol));
-                            buffer.clear();
-                            buffer.str("");
+                            int locationId = funcParam.getLocationId(op2->symbol);
+                            if(locationId <= 50){
+                                buffer << "LDR r" << allocater.getVarRegId(op1Id) << ", [ip, #";
+                                irAsmVectorMap[irId].push_back(buffer.str());
+                                backFillList.push_back(tuple<int, int, int, Symbol *>(1, irId, irAsmVectorMap[irId].size()-1, op2->symbol));
+                                buffer.clear();
+                                buffer.str("");
+                            }else{
+                                buffer << "MOVW r11, #:lower16:";
+                                irAsmVectorMap[irId].push_back(buffer.str());
+                                backFillList.push_back(tuple<int, int, int, Symbol *>(0, irId, irAsmVectorMap[irId].size()-1, op2->symbol));
+                                buffer.clear();
+                                buffer.str("");
+                                buffer << "MOVT r11, #:upper16:";
+                                irAsmVectorMap[irId].push_back(buffer.str());
+                                backFillList.push_back(tuple<int, int, int, Symbol *>(0, irId, irAsmVectorMap[irId].size()-1, op2->symbol));
+                                buffer.clear();
+                                buffer.str("");
+                                buffer << "LDR r" << allocater.getVarRegId(op1Id) << ", [ip, r11]";
+                                irAsmVectorMap[irId].push_back(buffer.str());
+                                buffer.clear();
+                                buffer.str("");
+                            }
+
                         }
 
                     }else if(op2->symbol->symbolType == Symbol::LOCAL_VAR){
@@ -601,12 +636,33 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                         buffer.clear();
                         buffer.str("");
                     }else{
-                        buffer << "ADD r" << allocater.getVarRegId(op1Id) << \
-                            ", ip, #";
-                        irAsmVectorMap[irId].push_back(buffer.str());
-                        backFillList.push_back(tuple<int, int, int, Symbol *>(0, irId, irAsmVectorMap[irId].size()-1, op2->symbol));
-                        buffer.clear();
-                        buffer.str("");
+                        int locationId = funcParam.getLocationId(op2->symbol);
+                        if(locationId <= 50) {
+                            buffer << "ADD r" << allocater.getVarRegId(op1Id) << \
+                                ", ip, #";
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            backFillList.push_back(
+                                    tuple<int, int, int, Symbol *>(0, irId, irAsmVectorMap[irId].size() - 1,
+                                                                   op2->symbol));
+                            buffer.clear();
+                            buffer.str("");
+                        }else{
+                            buffer << "MOVW r11, #:lower16:";
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            backFillList.push_back(tuple<int, int, int, Symbol *>(0, irId, irAsmVectorMap[irId].size()-1, op2->symbol));
+                            buffer.clear();
+                            buffer.str("");
+                            buffer << "MOVT r11, #:upper16:";
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            backFillList.push_back(tuple<int, int, int, Symbol *>(0, irId, irAsmVectorMap[irId].size()-1, op2->symbol));
+                            buffer.clear();
+                            buffer.str("");
+                            buffer << "ADD r" << allocater.getVarRegId(op1Id) << ", ip, r11";
+                            irAsmVectorMap[irId].push_back(buffer.str());
+                            buffer.clear();
+                            buffer.str("");
+                        }
+
                         buffer << "LDR r" << allocater.getVarRegId(op1Id) << \
                             ", [r" << allocater.getVarRegId(op1Id) << "]";
                         irAsmVectorMap[irId].push_back(buffer.str());
