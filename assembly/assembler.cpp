@@ -139,7 +139,7 @@ void Assembler::generateGlobalVarAsm() {  // put lines of global var
     }
 
     if(bssVarNum != 0){
-        this->asmVector.push_back(string(".data"));
+        this->asmVector.push_back(string(".bss"));
     }
 
     for(auto globalVar : globalVarList){
@@ -148,8 +148,10 @@ void Assembler::generateGlobalVarAsm() {  // put lines of global var
         }
 
         int globalVarSize = 1;
-        for(int dimSize : globalVar->dimensions){
-            globalVarSize *= dimSize;
+        if(globalVar->dimensions.size() != 0){
+            for(int dimSize : globalVar->dimensions){
+                globalVarSize *= dimSize;
+            }
         }
 
         buffer << ".global " << globalVar->name;
@@ -167,6 +169,7 @@ void Assembler::generateGlobalVarAsm() {  // put lines of global var
         string varInitLine_2 = buffer.str();
         buffer.clear();
         buffer.str("");
+        this->asmVector.push_back(varInitLine_2);
     }
 }
 
