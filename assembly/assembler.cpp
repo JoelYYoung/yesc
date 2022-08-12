@@ -311,22 +311,44 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     }
 
                 }else if(op3->type == IRItem::FVAR){
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
-                    buffer << "MOV r0, r" << allocater.getVarRegId(op2->iVal);
+
+                    //software implemented floating point add
+//                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
+//                    buffer << "MOV r0, r" << allocater.getVarRegId(op2->iVal);
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                    buffer << "MOV r1, r" << allocater.getVarRegId(op3->iVal);
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                    irAsmVectorMap[irId].push_back("BL __aeabi_fadd");
+//                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
+//                    useLR = true;
+
+                    //hardware implemented floating point add
+                    buffer << "VMOV s14, r" << allocater.getVarRegId(op2->iVal);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    buffer << "MOV r1, r" << allocater.getVarRegId(op3->iVal);
+
+                    buffer << "VMOV s15, r" << allocater.getVarRegId(op3->iVal);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("BL __aeabi_fadd");
-                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
+
+                    irAsmVectorMap[irId].push_back("VADD.F32 s15, s14, s15");
+
+                    buffer << "VMOV r" << allocater.getVarRegId(op1Id) << ", s15";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
-                    useLR = true;
+
+
                 }else if(op3->type == IRItem::INT){
                     if(op2->type == IRItem::PC){
                         buffer << "ADD r" << allocater.getVarRegId(op1Id) << ", pc"
@@ -926,22 +948,40 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }else if(op3->type == IRItem::FVAR){
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
-                    buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
+//                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
+//                    buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                    buffer << "MOV r1, r" << allocater.getVarRegId(op3->iVal);
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                    irAsmVectorMap[irId].push_back("BL __aeabi_fmul");
+//                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
+//                    useLR = true;
+
+                    //hardware implemented floating point add
+                    buffer << "VMOV s14, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    buffer << "MOV r1, r" << allocater.getVarRegId(op3->iVal);
+
+                    buffer << "VMOV s15, r" << allocater.getVarRegId(op3->iVal);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("BL __aeabi_fmul");
-                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
+
+                    irAsmVectorMap[irId].push_back("VMUL.F32 s15, s14, s15");
+
+                    buffer << "VMOV r" << allocater.getVarRegId(op1Id) << ", s15";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
-                    useLR = true;
                 }else if(op3->type == IRItem::INT){
                     buffer << "MUL r" << allocater.getVarRegId(op1Id) << ", r" << allocater.getVarRegId(op2Id)
                            << ", #" << op3->iVal;
@@ -1024,22 +1064,40 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
 //                    buffer.clear();
 //                    buffer.str("");
                 }else if(op3->type == IRItem::FVAR){
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
-                    buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
+//                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
+//                    buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                    buffer << "MOV r1, r" << allocater.getVarRegId(op3->iVal);
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                    irAsmVectorMap[irId].push_back("BL __aeabi_fdiv");
+//                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
+//                    useLR = true;
+
+                    //hardware implemented floating point add
+                    buffer << "VMOV s14, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    buffer << "MOV r1, r" << allocater.getVarRegId(op3->iVal);
+
+                    buffer << "VMOV s15, r" << allocater.getVarRegId(op3->iVal);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("BL __aeabi_fdiv");
-                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
+
+                    irAsmVectorMap[irId].push_back("VDIV.F32 s15, s14, s15");
+
+                    buffer << "VMOV r" << allocater.getVarRegId(op1Id) << ", s15";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
-                    useLR = true;
                 }else if(op3->type == IRItem::INT){
                     if(op3->iVal == 2){
                         buffer << "ASR r"<< allocater.getVarRegId(op1Id)
@@ -1127,22 +1185,40 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }else if(op3->type == IRItem::FVAR){
-                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
-                    buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
+//                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
+//                    buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                    buffer << "MOV r1, r" << allocater.getVarRegId(op3->iVal);
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                    irAsmVectorMap[irId].push_back("BL __aeabi_fsub");
+//                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
+//                    useLR = true;
+
+                    //hardware implemented floating point add
+                    buffer << "VMOV s14, r" << allocater.getVarRegId(op2Id);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    buffer << "MOV r1, r" << allocater.getVarRegId(op3->iVal);
+
+                    buffer << "VMOV s15, r" << allocater.getVarRegId(op3->iVal);
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("BL __aeabi_fsub");
-                    buffer << "MOV r" << allocater.getVarRegId(op1Id) << ", r0";
+
+                    irAsmVectorMap[irId].push_back("VSUB.F32 s15, s14, s15");
+
+                    buffer << "VMOV r" << allocater.getVarRegId(op1Id) << ", s15";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
-                    irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
-                    useLR = true;
                 }else if(op3->type == IRItem::INT){
                     buffer << "SUB r" << allocater.getVarRegId(op1Id) << ", r" << allocater.getVarRegId(op2Id)
                            << ", #" << op3->iVal;
