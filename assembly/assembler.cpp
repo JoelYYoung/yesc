@@ -52,7 +52,7 @@ void Assembler::generateGlobalVarAsm() {  // put lines of global var
     }
 
     for(auto globalVar : globalVarList){  //put lines of initialization
-        if(globalVar->fMap.size() == 0 && globalVar->iMap.size()==0){
+        if(globalVar->fMap.size() == 0 && globalVar->iMap.size()==0 && globalVar->dimensions.size() != 0){
             bssVarNum += 1;
             continue;
         }
@@ -143,7 +143,7 @@ void Assembler::generateGlobalVarAsm() {  // put lines of global var
     }
 
     for(auto globalVar : globalVarList){
-        if(globalVar->fMap.size() != 0 || globalVar->iMap.size() != 0){
+        if(globalVar->fMap.size() != 0 || globalVar->iMap.size() != 0 || globalVar->dimensions.size() == 0){
             continue;
         }
 
