@@ -698,10 +698,10 @@ void IRBuild::commonExpression()
                 if (ir->items[1]->type == IRItem::SYMBOL)
                 {
                     if(time==0){
-                        name = ir->items[1]->name;
+                        name = ir->items[1]->symbol->name;
                     }
                     else{
-                        if(name != ir->items[1]->name)
+                        if(name != ir->items[1]->symbol->name)
                         {
                             flag = 0;
                             time = 0;
@@ -729,7 +729,7 @@ void IRBuild::commonExpression()
                 if (ir->items[1]->type == IRItem::SYMBOL)
                 {
                     
-                    if (name != ir->items[1]->name)
+                    if (name != ir->items[1]->symbol->name)
                     {
                         flag = 0;
                         time = 0;
@@ -743,7 +743,7 @@ void IRBuild::commonExpression()
             {
                 if (ir->items[1]->type == IRItem::SYMBOL)
                 {
-                    if (name != ir->items[1]->name)
+                    if (name != ir->items[1]->symbol->name)
                     {
                         flag = 0;
                         time = 0;
@@ -762,6 +762,7 @@ void IRBuild::commonExpression()
                     //cout << time<<' '<<lastId << endl;
                     func.second[lastId - func.second[0]->irId - 3]->items[1]->iVal = sum;
                     func.second.erase(func.second.begin() + lastId + 1 - 5 * time, func.second.begin() + lastId - 4);
+                    break;
                     // cout << func.second.size() << endl;
                 }
                 flag = 0;
