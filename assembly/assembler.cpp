@@ -30,6 +30,7 @@ void Assembler::generateGlobalVarAsm() {  // put lines of global var
     vector<Symbol *> globalVarList = this->irBuild.getGlobalVars();
 
     int globalVarId = 0;
+    int bssVarNum = 0;
     ostringstream buffer;
 
 //    for(auto globalVar : globalVarList){  // put lines of declaration
@@ -51,6 +52,11 @@ void Assembler::generateGlobalVarAsm() {  // put lines of global var
     }
 
     for(auto globalVar : globalVarList){  //put lines of initialization
+        if(globalVar->fMap.size() == 0 && globalVar->iMap.size()==0){
+            bssVarNum += 1;
+            continue;
+        }
+
         buffer << ".global " << globalVar->name;
         this->asmVector.push_back(buffer.str());
         buffer.clear();
@@ -130,6 +136,37 @@ void Assembler::generateGlobalVarAsm() {  // put lines of global var
                 this->asmVector.push_back(varInitLine_2);
             }
         }
+    }
+
+    if(bssVarNum != 0){
+        this->asmVector.push_back(string(".data"));
+    }
+
+    for(auto globalVar : globalVarList){
+        if(globalVar->fMap.size() != 0 || globalVar->iMap.size() != 0){
+            continue;
+        }
+
+        int globalVarSize = 1;
+        for(int dimSize : globalVar->dimensions){
+            globalVarSize *= dimSize;
+        }
+
+        buffer << ".global " << globalVar->name;
+        this->asmVector.push_back(buffer.str());
+        buffer.clear();
+        buffer.str("");
+
+        buffer << globalVar->name << ":";
+        string varInitLine_1 = buffer.str();
+        this->asmVector.push_back(varInitLine_1);
+        buffer.clear();
+        buffer.str("");
+
+        buffer << "    " << ".space" << "    " << globalVarSize * 4;
+        string varInitLine_2 = buffer.str();
+        buffer.clear();
+        buffer.str("");
     }
 }
 
