@@ -31,5 +31,6 @@ public:
     void generateAsm();             // generate Asm
 };
 
+pair<bool, int> is2Pow(int num);
 
 #endif //HUST_ASSEMBLER_H

@@ -13,6 +13,23 @@
 #include "allocater.h"
 using namespace std;
 
+pair<bool, int> is2Pow(int num){
+    if(num < 0 && !(num & (num - 1))){
+        int x=0;
+        while(num>1)
+        {
+            num>>=1;
+            x++;
+        }
+        if(x > 31){
+            return pair<bool, int> (false, 0);
+        }
+        return pair<bool, int>(true, x);
+    }else{
+        return pair<bool, int> (false, 0);
+    }
+}
+
 void Assembler::generateAsm() {
     this->generateFuncParamInfo();
     this->generateFunctionAsm();
@@ -1013,11 +1030,20 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }else if(op3->type == IRItem::INT){
-                    buffer << "MUL r" << allocater.getVarRegId(op1Id) << ", r" << allocater.getVarRegId(op2Id)
-                           << ", #" << op3->iVal;
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    buffer.clear();
-                    buffer.str("");
+                    pair<bool, int> op3Judge = is2Pow(op3->iVal);
+                    if(op3Judge.first){
+                        buffer << "LSL r" << allocater.getVarRegId(op1Id) << ", r" << allocater.getVarRegId(op2Id)
+                               << ", #" << op3Judge.second;
+                        irAsmVectorMap[irId].push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                    }else{
+                        buffer << "MUL r" << allocater.getVarRegId(op1Id) << ", r" << allocater.getVarRegId(op2Id)
+                               << ", #" << op3->iVal;
+                        irAsmVectorMap[irId].push_back(buffer.str());
+                        buffer.clear();
+                        buffer.str("");
+                    }
                 }else if(op3->type == IRItem::FLOAT){
 //                    irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
 //                    buffer << "MOV r0, r" << allocater.getVarRegId(op2Id);
@@ -1158,9 +1184,10 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }else if(op3->type == IRItem::INT){
-                    if(op3->iVal == 2){
+                    pair<bool, int> op3Judge = is2Pow(op3->iVal);
+                    if(op3Judge.first){
                         buffer << "ASR r"<< allocater.getVarRegId(op1Id)
-                               <<", r" << allocater.getVarRegId(op2Id) << ", #1";
+                               <<", r" << allocater.getVarRegId(op2Id) << ", #" << op3Judge.second;
                         irAsmVectorMap[irId].push_back(buffer.str());
                         buffer.clear();
                         buffer.str("");
