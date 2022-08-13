@@ -60,6 +60,7 @@ int main(int argc, char **argv)
         Ir.commonDelete();
         //Ir.loadDelete();
     }
+    Ir.loadDelete();
     //Ir.strToMov();
     //Ir.printIRs(true);
     Assembler assembler = Assembler(Ir);
