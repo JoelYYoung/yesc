@@ -864,6 +864,7 @@ void IRBuild::loadDelete()
         int varId;
         int delsize = 0;
         vector<int> delList;
+        int num = 0;
         for (IR *ir : func.second)
         {
             if(ir->type == IR::LDR && ir->items[1]->type == IRItem::SYMBOL)
@@ -875,13 +876,14 @@ void IRBuild::loadDelete()
             {
                 if(ir->items[1]->symbol->name == name)
                 {
-                    delList.push_back(ir->irId - 1 - func.second[0]->irId);
+                    delList.push_back(num-1);
                     flag = 0;
                 }
             }
             else{
                 flag = 0;
             }
+            num++;
         }
         for (int i : delList)
         {
