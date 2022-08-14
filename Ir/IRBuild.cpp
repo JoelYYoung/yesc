@@ -901,21 +901,23 @@ void IRBuild::strToMov()
         int flag = 0;
         int varId;
         int delsize = 0;
+        int num = 0;
+        int var1 = 0;
         for (IR *ir : func.second)
         {
             if(ir->type == IR::STR && ir->items[1]->type == IRItem::SYMBOL)
             {
                 name = ir->items[1]->symbol->name;
+                var1 = ir->items[0]->iVal;
                 flag = 1;
             }
             else if(flag == 1 && ir->type == IR::LDR && ir->items[1]->type == IRItem::SYMBOL)
             {
                 if(ir->items[0]->type == IRItem::IVAR && ir->items[1]->symbol->name == name && ir->items[1]->symbol->dimensions.size() == 0)
                 {
-                    int var1 = ir->items[0]->iVal;
-                    int id = ir->irId - func.second[0]->irId;
+                    int id = num;
                     func.second[id]->type = IR::MOV;
-                    func.second[id]->items[1] = new IRItem(IRItem::IVAR,var1 - 1);
+                    func.second[id]->items[1] = new IRItem(IRItem::IVAR,var1);
                     flag = 0;
                 }
                 else{
@@ -925,6 +927,7 @@ void IRBuild::strToMov()
             else{
                 flag = 0;
             }
+            num++;
         }
     }
 }
