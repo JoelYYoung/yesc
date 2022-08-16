@@ -49,6 +49,8 @@ public:
     void LoopInvariant();
     void printIRs(bool silentMode = true);
     void printBlocks();
+    void printAll();
+    void blockToFunc();
     void commonExpression();
     void deadExpDelete();
     void loadDelete();
