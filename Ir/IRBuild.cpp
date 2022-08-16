@@ -796,7 +796,7 @@ void IRBuild::LoopInvariant()
                 block->setIRlist(irlist);
             }
         }
-        funcNum++;
+        //funcNum++;
     }
 }
 
