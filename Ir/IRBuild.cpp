@@ -739,10 +739,6 @@ void IRBuild::LoopInvariant()
             for (BaseBlock *bk : loop)
             {
                 vector<IR *> irlist = bk->getIRlist();
-                if(irlist.size()==0)
-                {
-                    continue;
-                }
                 vector<int> del;
                 int count = 0;
                 int firstid = irlist.front()->irId;
