@@ -16,8 +16,8 @@ private:
     vector<Symbol *> globalList;
     unordered_map<Symbol *, vector<Symbol *>> localList;
     vector<pair<Symbol *, vector<IR *>>> funcList;
-    vector<pair<Symbol *, vector<BaseBlock *>>> BlcokList;
-    BlockBuild blockbuilder;
+    vector<pair<Symbol *, vector<BaseBlock *>>> BlockList;
+    vector<pair<Symbol *, BlockBuild*>> blockbuilder;
     int varId;
     void parseRoot(parseNode *);
     vector<IR *> parseTree(parseNode *, Symbol *, Attribute * att);
@@ -45,6 +45,8 @@ public:
     unordered_map<Symbol *, vector<Symbol *>> getLocalVars();
     vector<Symbol *> getSymtemFunc();
     vector<pair<Symbol *, vector<IR *>>> getFuncs();
+    vector<pair<Symbol *, BlockBuild*>> getBlockBuild() { return blockbuilder; }
+    void LoopInvariant();
     void printIRs(bool silentMode = true);
     void printBlocks();
     void commonExpression();

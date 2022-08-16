@@ -280,8 +280,9 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
                 offset *= pn->symbol->dimensions[i];
             }
             ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, offset)}));
-            ir.push_back(new IR(IR::MUL, {new IRItem(IRItem::IVAR, varId-1), new IRItem(IRItem::IVAR, varId-1), new IRItem(IRItem::IVAR, varId)}));
-            newid = varId - 1;
+            ir.push_back(new IR(IR::MUL, {new IRItem(IRItem::IVAR, varId+1), new IRItem(IRItem::IVAR, varId-1), new IRItem(IRItem::IVAR, varId)}));
+            varId++;
+            newid = varId;
         }
         ir.push_back(new IR(IR::ARR, {new IRItem(IRItem::IVAR, nameid), new IRItem(IRItem::IVAR, newid)}));
         if(pn->symbol->dataType == Symbol::INT)
@@ -394,7 +395,7 @@ vector<IR*> IRBuild::parseAlgoExp(parseNode * pn, Symbol * sym,Attribute * att)
             {
                 for (int i = 0; i < pn->nodes[0]->nodes.size(); i++)
                 {
-		 if(pn->nodes[0]->nodes[i]->parseType != parseNode::INT_LITERAL || pn->nodes[1]->nodes[i]->parseType != parseNode::INT_LITERAL)
+		            if(pn->nodes[0]->nodes[i]->parseType != parseNode::INT_LITERAL || pn->nodes[1]->nodes[i]->parseType != parseNode::INT_LITERAL)
                     {
                         flag = 1;
                         break;
@@ -475,7 +476,7 @@ vector<IR *> IRBuild::parseCmpExp(parseNode *pn, Symbol *sym,Attribute * att) {
     default:
         break;
     }
-    ir.push_back(new IR(type, {new IRItem(IRItem::IVAR, varId++), new IRItem(ir1.back()->items[0]->type, ir1.back()->items[0]->iVal), new IRItem(ir2.back()->items[0]->type, ir2.back()->items[0]->iVal)}));
+    ir.push_back(new IR(type, {new IRItem(IRItem::IVAR, ++varId), new IRItem(ir1.back()->items[0]->type, ir1.back()->items[0]->iVal), new IRItem(ir2.back()->items[0]->type, ir2.back()->items[0]->iVal)}));
     return ir;
 }
 
@@ -672,12 +673,58 @@ void IRBuild::printBlocks() {
     for (pair<Symbol *, vector<IR *>> func : funcList)
     {
         vector<BaseBlock *> blocks;
-        blocks = blockbuilder.generateFunctionBlock(func.second);
-        this->BlcokList.emplace_back(func.first,blocks);
+        BlockBuild *builder = new BlockBuild();
+        blocks = builder->generateFunctionBlock(func.second);
+        this->BlockList.emplace_back(func.first,blocks);
+        this->blockbuilder.emplace_back(func.first, builder);
         cout << func.first->name << endl;
         //cout << func.second.size() << endl;
         for (BaseBlock *bb : blocks)
             cout << bb->toString() << endl;
+    }
+}
+
+void IRBuild::LoopInvariant()
+{
+    int funcNum = 0;
+    for (pair<Symbol *, vector<BaseBlock *>> pr : BlockList)
+    {
+        pair<Symbol *, BlockBuild *> builder = blockbuilder[funcNum];
+        vector<set<BaseBlock *>> loopBlock = builder.second->loop;
+        vector<BaseBlock *> funcBlock = pr.second;
+        set<int> st;
+        map<int, int> mp;
+        for (BaseBlock *bk : funcBlock)
+        {
+            vector<IR *> irlist = bk->getIRlist();
+            for(IR* ir : irlist)
+            {
+                if(ir->type == IR::MOV)
+                {
+                    if(ir->items[1]->type == IRItem::INT || ir->items[1]->type == IRItem::FLOAT || mp[ir->items[1]->iVal] == 1)
+                    {
+                        mp[ir->items[0]->iVal] = 1;
+                        st.insert(ir->irId);
+                    }
+                }
+                else if ((ir->type == IR::ADD) || (ir->type == IR::SUB) || (ir->type == IR::MUL) || (ir->type == IR::DIV) || (ir->type == IR::EQ) || (ir->type == IR::NE) || (ir->type == IR::GE) || (ir->type == IR::GT) || (ir->type == IR::LE) || (ir->type == IR::LT))
+                {
+                    if(mp[ir->items[1]->iVal] == 1 && mp[ir->items[2]->iVal] == 1)
+                    {
+                        mp[ir->items[0]->iVal] = 1;
+                        st.insert(ir->irId);
+                    }
+                }
+                else if((ir->type == IR::NOT) || (ir->type == IR::I2F) || (ir->type == IR::F2I) || (ir->type == IR::NEG))
+                {
+                    if(mp[ir->items[1]->iVal] == 1)
+                    {
+                        mp[ir->items[0]->iVal] = 1;
+                        st.insert(ir->irId);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -831,6 +878,7 @@ void IRBuild::deadExpDelete()
         varId = 0;
         int deletesize = 0;
         vector<int> delList;
+        int num = 0;
         int first = func.second[0]->irId;
         for (IR *ir : func.second)
         {
@@ -842,13 +890,15 @@ void IRBuild::deadExpDelete()
                     if (mp.count(name) == 1 && mp[name] == 1)
                     {
                         //func.second.erase(func.second.begin() + ir->irId - first - deletesize, func.second.begin() + ir->irId - first + 3 - deletesize);
-                        delList.push_back(ir->irId - first);
+                        delList.push_back(num);
                     }
                 }
             }
+            num++;
         }
         for(int i : delList)
         {
+            cout << i << endl;
             func.second.erase(func.second.begin() + i - deletesize, func.second.begin() + i + 3 - deletesize);
             deletesize += 3;
         }

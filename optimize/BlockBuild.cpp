@@ -13,18 +13,22 @@ vector<BaseBlock *> BlockBuild::generateFunctionBlock(vector<IR *> IRList){
     vector<int> blockbegin;
     vector<int> blockNum;
     map<int, int> blockmp;
-    IR * irtemp;
+    int blockNode = 0;
+    IR *irtemp;
     blockbegin.push_back(IRList[0]->irId);
-    for(IR* ir : IRList){
+    int irnum = 0;
+    for (IR *ir : IRList)
+    {
         if (ir->type == IR::BEQ || ir->type == IR::BNE)
         {
-            blockbegin.push_back(ir->irId+1);
+            blockbegin.push_back((irnum + 1) >= IRList.size() ? ir->irId + 1 : IRList[irnum + 1]->irId);
             blockbegin.push_back(ir->items.at(0)->iVal);
         }
         else if(ir->type==IR::GOTO){
-            blockbegin.push_back(ir->irId+1);
+            blockbegin.push_back((irnum + 1) >= IRList.size() ? ir->irId + 1 : IRList[irnum + 1]->irId);
             blockbegin.push_back(ir->items.at(0)->iVal);
         }
+        irnum++;
     }
     sort(blockbegin.begin(),blockbegin.end());
     blockbegin.erase(unique(blockbegin.begin(),blockbegin.end()),blockbegin.end());
@@ -35,35 +39,151 @@ vector<BaseBlock *> BlockBuild::generateFunctionBlock(vector<IR *> IRList){
         vector<IR*> bbir;
         BaseBlock* bb = new BaseBlock(blockNode++);
         blockmp[blockbegin[i]] = i;
-        for (int j = blockbegin[i] - IRList[0]->irId; j < blockbegin[i + 1] - IRList[0]->irId; j++)
+        int flag = 0;
+        for (IR *ir : IRList)
         {
-            bbir.push_back(IRList[j]);
-            blockNum.push_back(blockNode-1);
+            if(ir->irId == blockbegin[i])
+            {
+                flag = 1;
+            }
+            else if(ir->irId >= blockbegin[i+1])
+            {
+                break;
+            }
+            if(flag == 1)
+            {
+                bbir.push_back(ir);
+                blockNum.push_back(blockNode-1);
+            }
         }
         bb->setIRlist(bbir);
         blocklist.push_back(bb);
     }
-    
-    for(BaseBlock* bb :blocklist){
+    blockmp[blockbegin[blockbegin.size() - 1]] = -1;
+    int blocknum = 0;
+    for (BaseBlock *bb : blocklist)
+    {
         irtemp = bb->getLastIR();
         if(irtemp == nullptr) break;
         if (irtemp->type == IR::BEQ || irtemp->type == IR::BNE)
         {
             int jumpId = irtemp->items.at(0)->iVal;
-            int nextId = irtemp->irId + 1;
-            bb->insertFlowIn(blocklist[blockmp[nextId]]);
-            bb->insertFlowIn(blocklist[blockmp[jumpId]]);
+            int nextId = (blocknum + 1) >= blocklist.size() ? irtemp->irId+1 : blocklist[blocknum + 1]->getFirstIR()->irId;
+            bb->insertFlowOut(blocklist[blockmp[jumpId]]);
+            blocklist[blockmp[jumpId]]->insertFlowIn(bb);
+            if(blockmp[nextId] == -1)
+                break;
+            bb->insertFlowOut(blocklist[blockmp[nextId]]);
+            blocklist[blockmp[nextId]]->insertFlowIn(bb);
         }
         else if(irtemp->type==IR::GOTO){
             int jumpId = irtemp->items.at(0)->iVal;
-            int nextId = irtemp->irId + 1;
-            bb->insertFlowIn(blocklist[blockmp[nextId]]);
-            bb->insertFlowIn(blocklist[blockmp[jumpId]]);
+            bb->insertFlowOut(blocklist[blockmp[jumpId]]);
+            blocklist[blockmp[jumpId]]->insertFlowIn(bb);
         }
         else{
-            int nextId = irtemp->irId + 1;
-            bb->insertFlowIn(blocklist[blockmp[nextId]]);
+            int nextId = (blocknum + 1) >= blocklist.size() ? irtemp->irId+1 : blocklist[blocknum + 1]->getFirstIR()->irId;
+            if(blockmp[nextId] == -1)
+                break;
+            bb->insertFlowOut(blocklist[blockmp[nextId]]);
+            blocklist[blockmp[nextId]]->insertFlowIn(bb);
         }
+        blocknum++;
+    }
+
+    for (BaseBlock *bk : blocklist)
+    {
+        if(bk->BlockId == 0)
+        {
+            bk->addDom(bk);
+        }
+        else{
+            for(BaseBlock* b : blocklist)
+            {
+                bk->addDom(b);
+            }
+        }
+    }
+    for (int i = 1; i <= blocklist.size();i++)
+    {
+        for (int j = 0; j < blocklist.size(); j++)
+        {
+            vector<BaseBlock *> in = blocklist[j]->getBlockIn();
+            vector<BaseBlock *> dom;
+            map<int,int> mp;
+            for (int k = 0; k < in.size(); k++)
+            {
+                set<BaseBlock *> dm = blocklist[in[k]->BlockId]->getDoms();
+                //cout << in[k]->BlockId << ':' << dm.size() << endl;
+                for (BaseBlock *bk : dm)
+                {
+                    mp[bk->BlockId]++;
+                    //cout << bk->BlockId << endl;
+                }
+            }
+            for(pair<int,int> p : mp)
+            {
+                if(p.second == in.size())
+                {
+                    //cout << p.first << endl;
+                    dom.push_back(blocklist[p.first]);
+                }
+            }
+            blocklist[j]->clearDom();
+            for (BaseBlock *bk : dom)
+            {
+                blocklist[j]->addDom(bk);
+            }
+            blocklist[j]->addDom(blocklist[j]);
+        }
+    }
+
+    for (int i = 0; i < blocklist.size(); i++)
+    {
+        set<BaseBlock *> dm = blocklist[i]->getDoms();
+        for(BaseBlock* flow : dm)
+        {
+            vector<BaseBlock *> outList = flow->getBlockIn();
+            for (BaseBlock *out : outList)
+            {
+                if (out->BlockId == i)
+                {
+                    backEdge.push_back(make_pair(out,flow));
+                }
+            }
+        }
+    }
+    for(pair<BaseBlock*,BaseBlock*> edge : backEdge)
+    {
+        set<BaseBlock *> st;
+        st.insert(edge.first);
+        st.insert(edge.second);
+        vector<BaseBlock *> addlist;
+        vector<BaseBlock *> newList;
+        int ssize = 0;
+        addlist.push_back(edge.first);
+        while (st.size()!=ssize)
+        {
+            ssize = st.size();
+            newList.clear();
+            for (BaseBlock *add : addlist)
+            {
+                vector<BaseBlock *> father = add->getBlockIn();
+                int num = st.size();
+                for (BaseBlock *bk : father)
+                {
+                    st.insert(bk);
+                    if (st.size() > num)
+                    {
+                        newList.push_back(bk);
+                        num++;
+                    }
+                }
+            }
+            addlist.clear();
+            addlist.insert(addlist.begin(), newList.begin(), newList.end());
+        }
+        loop.push_back(st);
     }
     return blocklist;
 }
