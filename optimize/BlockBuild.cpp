@@ -25,7 +25,7 @@ vector<BaseBlock *> BlockBuild::generateFunctionBlock(vector<IR *> IRList){
             blockbegin.push_back(ir->items.at(0)->iVal);
         }
         else if(ir->type==IR::GOTO){
-            if(IRList[irnum-1]->type == IR::RETURN)
+            if (IRList[irnum - 1]->type == IR::RETURN)
             {
                 blockbegin.push_back((irnum + 1) >= IRList.size() ? ir->irId + 1 : IRList[irnum + 1]->irId);
             }
@@ -84,7 +84,13 @@ vector<BaseBlock *> BlockBuild::generateFunctionBlock(vector<IR *> IRList){
         }
         else if(irtemp->type==IR::GOTO){
             vector<IR *> irlist = bb->getIRlist();
-            if (irlist[irlist.size() - 2]->type != IR::RETURN)
+            if (irlist.size()>1 && irlist[irlist.size() - 2]->type != IR::RETURN)
+            {
+                int jumpId = irtemp->items.at(0)->iVal;
+                bb->insertFlowOut(blocklist[blockmp[jumpId]]);
+                blocklist[blockmp[jumpId]]->insertFlowIn(bb);
+            }
+            else if(irlist.size()==1)
             {
                 int jumpId = irtemp->items.at(0)->iVal;
                 bb->insertFlowOut(blocklist[blockmp[jumpId]]);
@@ -100,7 +106,6 @@ vector<BaseBlock *> BlockBuild::generateFunctionBlock(vector<IR *> IRList){
         }
         blocknum++;
     }
-
     for (BaseBlock *bk : blocklist)
     {
         if(bk->BlockId == 0)
