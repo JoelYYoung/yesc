@@ -4,12 +4,14 @@
 #include <vector>
 #include "../Ir/IR.h"
 #include "BaseBlock.h"
-static int blockNode;
+//static int blockNode;
 using namespace std;
 class BlockBuild {
 public:
+    vector<pair<BaseBlock *, BaseBlock *>> backEdge;
+    vector<set<BaseBlock *>> loop;
     vector<BaseBlock *> generateFunctionBlock(vector<IR *> IRList);
-    void checkBlcokType();
+    void checkBlockType();
     BlockBuild(){}
     ~BlockBuild(){}
 };

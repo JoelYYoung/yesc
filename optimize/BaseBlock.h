@@ -28,12 +28,13 @@ public:
   void clearFather() { this->father = nullptr; }
 
   void addDom(BaseBlock *bb) { domS.insert(bb); }
+  void clearDom() { domS.clear(); }
   std::set<BaseBlock *> &getDoms() { return domS; }
   void setDoms(std::set<BaseBlock *> &doms) {
     domS.clear();
     domS.insert(doms.begin(), doms.end());
   }
-
+  vector<IR*> getIRlist() { return IRlist; }
   void setIRlist(vector<IR *> IRlist) { this->IRlist = IRlist; }
   void setBlockId(int BlockId){this->BlockId = BlockId;}
   void insertFlowIn(BaseBlock* bb){this->BlockIn.push_back(bb);}
@@ -45,10 +46,22 @@ public:
       return IRlist.back();
     else return nullptr;
     }
-  
-  BaseBlock(){}
-  BaseBlock(int BlockId){this->BlockId = BlockId;}
-  BaseBlock(int BlockId,vector<IR *> IRlist){this->BlockId = BlockId;this->IRlist = IRlist;}
+    IR* getFirstIR(){
+      if(IRlist.size()>0)
+      {
+        return IRlist.front();
+      }
+      else
+        return nullptr;
+    }
+    vector<BaseBlock *> getBlockIn();
+    vector<BaseBlock *> getBlockOut();
+    BaseBlock() {}
+    BaseBlock(int BlockId) { this->BlockId = BlockId; }
+    BaseBlock(int BlockId, vector<IR *> IRlist)
+    {
+      this->BlockId = BlockId;
+      this->IRlist = IRlist;}
   ~BaseBlock();
   string toString();
 
