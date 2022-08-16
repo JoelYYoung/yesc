@@ -63,10 +63,7 @@ int main(int argc, char **argv)
     Ir.loadDelete();
     Ir.printBlocks();
     Ir.LoopInvariant();
-    Ir.blockToFunc();
-    vector<pair<Symbol *, BlockBuild *>> block = Ir.getBlockBuild();
-    //Ir.strToMov();
-    //Ir.printIRs(true);
+    //Ir.blockToFunc();
     Assembler assembler = Assembler(Ir);
     assembler.generateAsm();
     assembler.outputAsm(*output);
