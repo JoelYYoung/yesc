@@ -22,7 +22,8 @@ vector<BaseBlock *> BlockBuild::generateFunctionBlock(vector<IR *> IRList){
         if (ir->type == IR::BEQ || ir->type == IR::BNE)
         {
             blockbegin.push_back((irnum + 1) >= IRList.size() ? ir->irId + 1 : IRList[irnum + 1]->irId);
-            blockbegin.push_back(ir->items.at(0)->iVal);
+            if (ir->items[0]->iVal <= IRList.back()->irId)
+                blockbegin.push_back(ir->items.at(0)->iVal);
         }
         else if(ir->type==IR::GOTO){
             if (IRList[irnum - 1]->type == IR::RETURN)
@@ -74,9 +75,12 @@ vector<BaseBlock *> BlockBuild::generateFunctionBlock(vector<IR *> IRList){
         if (irtemp->type == IR::BEQ || irtemp->type == IR::BNE)
         {
             int jumpId = irtemp->items.at(0)->iVal;
+            if (blockmp[jumpId] != -1)
+            {
+                bb->insertFlowOut(blocklist[blockmp[jumpId]]);
+                blocklist[blockmp[jumpId]]->insertFlowIn(bb);
+            }
             int nextId = (blocknum + 1) >= blocklist.size() ? irtemp->irId+1 : blocklist[blocknum + 1]->getFirstIR()->irId;
-            bb->insertFlowOut(blocklist[blockmp[jumpId]]);
-            blocklist[blockmp[jumpId]]->insertFlowIn(bb);
             if(blockmp[nextId] == -1)
                 break;
             bb->insertFlowOut(blocklist[blockmp[nextId]]);
