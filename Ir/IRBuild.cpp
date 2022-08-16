@@ -734,12 +734,6 @@ void IRBuild::LoopInvariant()
                     }
                 }
             }
-            cout << endl;
-            for (pair<int, int> p : mp)
-            {
-                cout << p.first << ':' << p.second << endl;
-            }
-            cout << endl;
             vector<IR *> newList;
             map<int, int> idmap;
             for (BaseBlock *bk : loop)
@@ -760,7 +754,6 @@ void IRBuild::LoopInvariant()
                 int delnum = 0;
                 for (int i : del)
                 {
-                    cout << i << endl;
                     irlist.erase(irlist.begin() + i + delnum);
                     delnum--;
                 }
@@ -986,7 +979,6 @@ void IRBuild::deadExpDelete()
         }
         for(int i : delList)
         {
-            cout << i << endl;
             func.second.erase(func.second.begin() + i - deletesize, func.second.begin() + i + 3 - deletesize);
             deletesize += 3;
         }
@@ -1124,7 +1116,6 @@ void IRBuild::commonDelete()
             for (int i = 1; i < delList.size(); i++)
             {
                 func.second.erase(func.second.begin() + delList[i] - firstid - size, func.second.begin() + delList[i] - firstid + 33 - size);
-                cout << delList[i] << endl;
                 size += 33;
             }
             int id = delList[0] + 32;
