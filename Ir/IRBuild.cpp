@@ -664,12 +664,6 @@ void IRBuild::printIRs(bool silentMode) {
 }
 
 void IRBuild::printBlocks() {
-    //parseRoot(root);
-    for (Symbol *con : constList)
-        cout << con->toString() << endl;
-    for (Symbol *global : globalList)
-        cout << global->toString() << endl;
-    //cout << "size:" << funcList.size() << endl;
     for (pair<Symbol *, vector<IR *>> func : funcList)
     {
         vector<BaseBlock *> blocks;
@@ -677,10 +671,11 @@ void IRBuild::printBlocks() {
         blocks = builder->generateFunctionBlock(func.second);
         this->BlockList.emplace_back(func.first,blocks);
         this->blockbuilder.emplace_back(func.first, builder);
+	/*
         cout << func.first->name << endl;
         //cout << func.second.size() << endl;
         for (BaseBlock *bb : blocks)
-            cout << bb->toString() << endl;
+            cout << bb->toString() << endl;*/
     }
 }
 

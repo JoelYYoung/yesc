@@ -61,6 +61,8 @@ int main(int argc, char **argv)
         //Ir.loadDelete();
     }
     Ir.loadDelete();
+    Ir.printBlocks();
+    vector<pair<Symbol *, BlockBuild *>> block = Ir.getBlockBuild();
     //Ir.strToMov();
     //Ir.printIRs(true);
     Assembler assembler = Assembler(Ir);
