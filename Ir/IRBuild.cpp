@@ -739,7 +739,7 @@ void IRBuild::LoopInvariant()
             for (BaseBlock *bk : loop)
             {
                 vector<IR *> irlist = bk->getIRlist();
-                if(irlist.size()==0)
+                if(irlist.size()<=1)
                 {
                     continue;
                 }
@@ -754,14 +754,6 @@ void IRBuild::LoopInvariant()
                         del.push_back(count);
                     }
                     count++;
-                }
-	      if(del.size() == irlist.size())
-                {
-                    for (int i = 1; i <= del.size();i++)
-                    {
-                        newList.pop_back();
-                    }
-                    continue;
                 }
                 int delnum = 0;
                 for (int i : del)
