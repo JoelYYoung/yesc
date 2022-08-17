@@ -5,6 +5,7 @@
 #include <vector>
 #include "Ir/IRBuild.h"
 #include "assembly/assembler.h"
+#include "assembly/AstOptimizer.h"
 using namespace std;
 
 std::string inputFilename("<stdin>");
@@ -49,9 +50,17 @@ int main(int argc, char **argv)
     vector<tokenInfo> tokenlist = lexicalAnalyze(inputFilename);
 
     Analyse *analyse = new Analyse(tokenlist);
-
     vector<Symbol *> symbolList = analyse->getSymbolTable();
     parseNode *pn = analyse->getparseNode();
+
+    if(optimizeLevel == 2)
+    {
+        AstOptimizer ao(pn, analyse);
+        ao.generateDependencyGraph();
+        ao.generateCriticalVariableSet();
+        ao.optimizeAst();
+    }
+
     IRBuild Ir(pn, symbolList);
     if(optimizeLevel == 2)
     {
