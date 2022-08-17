@@ -690,10 +690,12 @@ void IRBuild::LoopInvariant()
     {
         pair<Symbol *, BlockBuild *> builder = blockbuilder[funcNum];
         vector<set<BaseBlock *>> loopBlock = builder.second->loop;
+        vector<pair<BaseBlock *, BaseBlock *>> back = builder.second->backEdge;
         vector<BaseBlock *> funcBlock = pr.second;
+        int loopnum = 0;
         for (set<BaseBlock *> loop : loopBlock)
         {
-            int firstBlock = -1;
+            int firstBlock = back[loopnum].second->BlockId;
             set<int> st;
             map<int, int> mp;
             int mpsize = -1;
@@ -702,8 +704,6 @@ void IRBuild::LoopInvariant()
                 mpsize = mp.size();
                 for (BaseBlock *bk : loop)
                 {
-                    if(firstBlock == -1)
-                        firstBlock = bk->BlockId;
                     vector<IR *> irlist = bk->getIRlist();
                     for (IR *ir : irlist)
                     {
@@ -739,6 +739,10 @@ void IRBuild::LoopInvariant()
             for (BaseBlock *bk : loop)
             {
                 vector<IR *> irlist = bk->getIRlist();
+                if(irlist.size()==0)
+                {
+                    continue;
+                }
                 vector<int> del;
                 int count = 0;
                 int firstid = irlist.front()->irId;
@@ -752,10 +756,8 @@ void IRBuild::LoopInvariant()
                     count++;
                 }
                 int delnum = 0;
-                
                 for (int i : del)
                 {
-                    //cout << i << endl;
                     irlist.erase(irlist.begin() + i + delnum);
                     delnum--;
                 }
@@ -791,8 +793,9 @@ void IRBuild::LoopInvariant()
                 }
                 block->setIRlist(irlist);
             }
+            loopnum++;
         }
-        //funcNum++;
+        funcNum++;
     }
 }
 
