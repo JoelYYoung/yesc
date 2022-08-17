@@ -777,6 +777,7 @@ void IRBuild::LoopInvariant()
                     break;
                 }
             }
+/*
             for(BaseBlock* block : funcBlock)
             {
                 vector<IR *> irlist = block->getIRlist();
@@ -792,7 +793,7 @@ void IRBuild::LoopInvariant()
                     }
                 }
                 block->setIRlist(irlist);
-            }
+            } */
             loopnum++;
         }
         funcNum++;
