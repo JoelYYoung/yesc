@@ -791,9 +791,9 @@ void IRBuild::LoopInvariant()
                             ir->items[0]->iVal = idmap[id];
                         }
                     }
-                } */
+                } 
                 block->setIRlist(irlist);
-            } 
+            } */
             loopnum++;
         }
         funcNum++;
