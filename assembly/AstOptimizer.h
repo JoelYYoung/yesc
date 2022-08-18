@@ -17,6 +17,7 @@ private:
     unordered_map<Symbol *, bool> funcOutInfluenceMap;
     unordered_map<Symbol *, vector<pair<Symbol *, int>>> funcCalledGraph;
     unordered_set<Symbol *> criticalVariableSet;
+    unordered_set<Symbol *> callOtherFuncSet;
     unordered_set<Symbol *> uselessFuncSet;
     parseNode *rootNode;
     Analyse *analyse;
