@@ -72,7 +72,7 @@ int main(int argc, char **argv)
     Ir.loadDelete();
     Ir.printBlocks();
     Ir.LoopInvariant();
-    //Ir.blockToFunc();
+    Ir.blockToFunc();
     Assembler assembler = Assembler(Ir);
     assembler.generateAsm();
     assembler.outputAsm(*output);

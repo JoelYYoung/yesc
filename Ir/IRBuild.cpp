@@ -699,10 +699,113 @@ void IRBuild::LoopInvariant()
         int loopnum = 0;
         for (set<BaseBlock *> loop : loopBlock)
         {
+            map<int, vector<int>> varList;
+            for (BaseBlock *bk : loop)
+            {
+                vector<IR *> irlist = bk->getIRlist();
+                for (IR *ir : irlist)
+                {
+                    if(ir->items[0]->type == IRItem::IVAR || ir->items[0]->type == IRItem::FVAR)
+                    {
+                        varList[ir->items[0]->iVal].push_back(ir->irId);
+                    }
+                    for (int i = 1; i < ir->items.size(); i++)
+                    {
+                        if(ir->items[i]->type == IRItem::IVAR || ir->items[i]->type == IRItem::FVAR)
+                        {
+                            varList[ir->items[i]->iVal].push_back(ir->irId);
+                        }
+                    }
+                }
+            }
+            set<int> delIr;
+            for (pair<int, vector<int>> var : varList)
+            {
+                if(var.second.size() == 1)
+                {
+                    delIr.insert(var.second[0]);
+                }
+            }
+            for (BaseBlock *bk : loop)
+            {
+                vector<IR *> irlist = bk->getIRlist();
+                int num = 0;
+                for (IR *ir : irlist)
+                {
+                    if(delIr.count(ir->irId)==1)
+                    {
+                        irlist.erase(irlist.begin() + num);
+                    }
+                    num++;
+                }
+                bk->setIRlist(irlist);
+            }
             int firstBlock = back[loopnum].second->BlockId;
             set<int> st;
             map<int, int> mp;
             int mpsize = -1;
+            map<Symbol *, vector<pair<int, BaseBlock *>>> ldr;
+            map<Symbol *, vector<pair<int, BaseBlock *>>> str;
+            for (BaseBlock *bk : loop)
+            {
+                vector<IR *> irlist = bk->getIRlist();
+                int num = 0;
+                for (IR *ir : irlist)
+                {
+                    if(ir->type == IR::LDR)
+                    {
+                        ldr[ir->items[1]->symbol].push_back(make_pair(num,bk));
+                        if(str.count(ir->items[1]->symbol) == 0)
+                        {
+                            str[ir->items[1]->symbol] = {};
+                        }
+                    }
+                    else if(ir->type == IR::STR)
+                    {
+                        str[ir->items[1]->symbol].push_back(make_pair(num,bk));
+                        if(ldr.count(ir->items[1]->symbol) == 0)
+                        {
+                            ldr[ir->items[1]->symbol] = {};
+                        }
+                    }
+                    num++;
+                }
+            }
+            for(pair<Symbol *, vector<pair<int, BaseBlock *>>> pr : ldr)
+            {
+                if(str[pr.first].size() == 0)
+                {
+                    for(pair<int, BaseBlock *> bk : pr.second)
+                    {
+                        vector<IR *> irlist = bk.second->getIRlist();
+                        mp[irlist[bk.first]->items[0]->iVal] = 1;
+                        st.insert(irlist[bk.first]->irId);
+                    }
+                }
+                else if(str[pr.first].size()!=0)
+                {
+                    if(str[pr.first].size()==1)
+                    {
+                        pair<int, BaseBlock *> strpos = str[pr.first].front();
+                        int flag = 0;
+                        for (pair<int, BaseBlock *> bk : pr.second)
+                        {
+                            set<BaseBlock *> st = bk.second->getDoms();
+                            if(st.count(strpos.second)!=1)
+                            {
+                                flag = 1;
+                                break;
+                            }
+                        }
+                        if(flag == 0)
+                        {
+                            vector<IR *> irlist = strpos.second->getIRlist();
+                            mp[irlist[strpos.first]->items[0]->iVal] = 1;
+                            st.insert(irlist[strpos.first]->irId);
+                        }
+                    }
+                }
+            }
             while (mpsize != mp.size())
             {
                 mpsize = mp.size();
@@ -719,7 +822,7 @@ void IRBuild::LoopInvariant()
                                 st.insert(ir->irId);
                             }
                         }
-                        else if ((ir->type == IR::ADD) || (ir->type == IR::SUB) || (ir->type == IR::MUL) || (ir->type == IR::DIV) || (ir->type == IR::EQ) || (ir->type == IR::NE) || (ir->type == IR::GE) || (ir->type == IR::GT) || (ir->type == IR::LE) || (ir->type == IR::LT))
+                        else if ((ir->type == IR::ADD) || (ir->type == IR::SUB) || (ir->type == IR::MUL) || (ir->type == IR::DIV) || (ir->type == IR::DIV) || (ir->type == IR::EQ) || (ir->type == IR::NE) || (ir->type == IR::GE) || (ir->type == IR::GT) || (ir->type == IR::LE) || (ir->type == IR::LT))
                         {
                             if ((mp.count(ir->items[1]->iVal) == 1 && mp.at(ir->items[1]->iVal) == 1) && (mp.count(ir->items[2]->iVal) == 1 && mp.at(ir->items[2]->iVal) == 1))
                             {
@@ -754,8 +857,21 @@ void IRBuild::LoopInvariant()
                 {
                     if(st.count(ir->irId)==1)
                     {
-                        newList.push_back(ir);
-                        del.push_back(count);
+                        int flag = 0;
+                        vector<int> list = varList[ir->items[0]->iVal];
+                        for (int i : list)
+                        {
+                            if(st.count(i)!=1)
+                            {
+                                flag = 1;
+                                break;
+                            }
+                        }
+                        if(flag==0)
+                        {
+                            newList.push_back(ir);
+                            del.push_back(count);
+                        }
                     }
                     count++;
                 }
@@ -781,7 +897,8 @@ void IRBuild::LoopInvariant()
                     break;
                 }
             }
-            for(BaseBlock* block : funcBlock)
+            //cout << idmap.size() << endl;
+            for (BaseBlock *block : funcBlock)
             {
                 vector<IR *> irlist = block->getIRlist();
                 for (IR *ir : irlist)
@@ -791,10 +908,10 @@ void IRBuild::LoopInvariant()
                         int id = ir->items[0]->iVal;
                         if(idmap.count(id)==1)
                         {
-                            //ir->items[0]->iVal = idmap[id];
+                            ir->items[0]->iVal = idmap[id];
                         }
                     }
-                } 
+                }
                 block->setIRlist(irlist);
             }
             loopnum++;
