@@ -494,7 +494,7 @@ vector<IR *> IRBuild::parseIfStmt(parseNode *pn, Symbol *sym,Attribute * att) {
         IR *gotoIr = new IR(IR::GOTO, {new IRItem(IRItem::IR_ID, 0)});
         vector<IR *> ir3 = parseTree(pn->nodes[2], sym, att);
         if(ir2.size()==0)
-            gotoIr->items[0]->iVal = ir1.back()->irId + 1 + ir3.size() + 1;
+            gotoIr->items[0]->iVal = ir1.back()->irId + 2 + ir3.size() + 1;
         else
             gotoIr->items[0]->iVal = ir2.back()->irId + 1 + ir3.size() + 1;
         ir.push_back(gotoIr);
