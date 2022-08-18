@@ -284,7 +284,8 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
             varId++;
             newid = varId;
         }
-        ir.push_back(new IR(IR::ARR, {new IRItem(IRItem::IVAR, nameid), new IRItem(IRItem::IVAR, newid)}));
+        ir.push_back(new IR(IR::ADD, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::IVAR, nameid), new IRItem(IRItem::IVAR, newid)}));
+        nameid = varId;
         if(pn->symbol->dataType == Symbol::INT)
             ir.push_back(new IR(IR::LDR, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::IVAR, nameid)}));
         else if(pn->symbol->dataType == Symbol::FLOAT)
