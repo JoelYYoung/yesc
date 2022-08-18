@@ -30,6 +30,7 @@ bool AstOptimizer::generateFuncCallDelInfoRec(parseNode *astNode, bool fatherIsE
         }else{
             funcCalledGraph[astNode->symbol].push_back(pair<Symbol *, int>(funcSymbol, 0));
         }
+        callOtherFuncSet.insert(funcSymbol);
     }
 
     vector<parseNode *> childNodeList = astNode->nodes;
@@ -56,6 +57,9 @@ void AstOptimizer::generateFuncCallDelInfo() {
                     funcOutInfluenceMap[childNodeList[i]->symbol] = true;
                 }
             }
+//            if(callOtherFuncSet.find(childNodeList[i]->symbol) != callOtherFuncSet.end()){
+//                funcOutInfluenceMap[childNodeList[i]->symbol] = true;
+//            }
             if(funcOutInfluenceMap.find(childNodeList[i]->symbol) == funcOutInfluenceMap.end()){
                 funcOutInfluenceMap[childNodeList[i]->symbol] = false;
             }
@@ -82,7 +86,8 @@ void AstOptimizer::generateFuncCallDelInfo() {
             }
 
             if(callerSet.find(mainFuncSymbol) == callerSet.end()
-               && funcOutInfluenceMap[childNodeList[i]->symbol] == false){
+               && funcOutInfluenceMap[childNodeList[i]->symbol] == false
+               && callOtherFuncSet.find(childNodeList[i]->symbol) == callOtherFuncSet.end()){
                 uselessFuncSet.insert(childNodeList[i]->symbol);
             }
 
@@ -297,6 +302,7 @@ void AstOptimizer::optimizeAstRec_2(parseNode *astNode, int returnType){
                 continue;
             }
         }else if((*childNodeListItor)->parseType == parseNode::RETURN_STMT
+                 &&(*childNodeListItor)->nodes.size() != 0
                  &&(*childNodeListItor)->nodes[0]->parseType == parseNode::FUNC_CALL){
             if(uselessFuncSet.find((*childNodeListItor)->nodes[0]->symbol) != uselessFuncSet.end()){
                 delete (*childNodeListItor)->nodes[0];
