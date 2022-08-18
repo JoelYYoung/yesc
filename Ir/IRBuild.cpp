@@ -752,7 +752,7 @@ void IRBuild::LoopInvariant()
                 int num = 0;
                 for (IR *ir : irlist)
                 {
-                    if(ir->type == IR::LDR)
+                    if(ir->type == IR::LDR && ir->items[1]->type == IRItem::SYMBOL)
                     {
                         ldr[ir->items[1]->symbol].push_back(make_pair(num,bk));
                         if(str.count(ir->items[1]->symbol) == 0)
@@ -760,7 +760,7 @@ void IRBuild::LoopInvariant()
                             str[ir->items[1]->symbol] = {};
                         }
                     }
-                    else if(ir->type == IR::STR)
+                    else if(ir->type == IR::STR && ir->items[1]->type == IRItem::SYMBOL)
                     {
                         str[ir->items[1]->symbol].push_back(make_pair(num,bk));
                         if(ldr.count(ir->items[1]->symbol) == 0)
@@ -838,6 +838,14 @@ void IRBuild::LoopInvariant()
                                 st.insert(ir->irId);
                             }
                         }
+                        else if((ir->type == IR::LDR && ir->items[1]->type == IRItem::IVAR) || (ir->type == IR::STR && ir->items[1]->type == IRItem::IVAR))
+                        {
+                            if (mp.count(ir->items[1]->iVal) == 1 && mp.at(ir->items[1]->iVal) == 1)
+                            {
+                                mp[ir->items[0]->iVal] = 1;
+                                st.insert(ir->irId);
+                            }
+                        }
                     }
                 }
             }
@@ -853,6 +861,7 @@ void IRBuild::LoopInvariant()
                 vector<int> del;
                 int count = 0;
                 int firstid = irlist.front()->irId;
+                int isfirst = 0;
                 for (IR *ir : irlist)
                 {
                     if(st.count(ir->irId)==1)
@@ -869,6 +878,8 @@ void IRBuild::LoopInvariant()
                         }
                         if(flag==0)
                         {
+                            if(ir->irId == firstid)
+                                isfirst = 1;
                             newList.push_back(ir);
                             del.push_back(count);
                         }
@@ -881,7 +892,7 @@ void IRBuild::LoopInvariant()
                     irlist.erase(irlist.begin() + i + delnum);
                     delnum--;
                 }
-                if(st.count(firstid)==1)
+                if((st.count(firstid)==1) && (isfirst == 1))
                 {
                     idmap[firstid] = irlist.front()->irId;
                 }
@@ -919,7 +930,6 @@ void IRBuild::LoopInvariant()
         funcNum++;
     }
 }
-
 void IRBuild::blockToFunc()
 {
     funcList.clear();
