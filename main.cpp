@@ -56,8 +56,6 @@ int main(int argc, char **argv)
     if(optimizeLevel == 2)
     {
         AstOptimizer ao(pn, analyse);
-        ao.generateDependencyGraph();
-        ao.generateCriticalVariableSet();
         ao.optimizeAst();
     }
 
@@ -71,8 +69,8 @@ int main(int argc, char **argv)
     }
     Ir.loadDelete();
     Ir.printBlocks();
-    Ir.LoopInvariant();
-    Ir.blockToFunc();
+    //Ir.LoopInvariant();
+    //Ir.blockToFunc();
     Assembler assembler = Assembler(Ir);
     assembler.generateAsm();
     assembler.outputAsm(*output);

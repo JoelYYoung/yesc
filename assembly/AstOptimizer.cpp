@@ -14,6 +14,82 @@ bool AstOptimizer::haveFuncCallRec(parseNode *astNode){
     return flag;
 }
 
+bool AstOptimizer::generateFuncCallDelInfoRec(parseNode *astNode, bool fatherIsExp, Symbol *funcSymbol) {
+    bool haveGlobalAssign = false;
+    bool isExp = false;
+    if(astNode->parseType == parseNode::ASSIGN_STMT){
+        if(astNode->nodes[0]->symbol->symbolType == Symbol::GLOBAL_VAR){
+            haveGlobalAssign = true;
+        }
+    }else if(astNode->parseType == parseNode::EXP_STMT){
+        isExp = true;
+    }else if(astNode->parseType == parseNode::FUNC_CALL){
+        // add into funcCalledGraph
+        if(fatherIsExp){
+            funcCalledGraph[astNode->symbol].push_back(pair<Symbol *, int>(funcSymbol, 1));
+        }else{
+            funcCalledGraph[astNode->symbol].push_back(pair<Symbol *, int>(funcSymbol, 0));
+        }
+    }
+
+    vector<parseNode *> childNodeList = astNode->nodes;
+    for(int i = 0; i < childNodeList.size(); i++){
+        bool tmp = generateFuncCallDelInfoRec(childNodeList[i], isExp, funcSymbol);
+        if(tmp) haveGlobalAssign = true;
+    }
+    return haveGlobalAssign;
+}
+
+void AstOptimizer::generateFuncCallDelInfo() {
+    vector<parseNode *> childNodeList = rootNode->nodes;
+    Symbol *mainFuncSymbol = NULL;
+    for(int i = 0; i < childNodeList.size(); i++){
+        if(childNodeList[i]->parseType == parseNode::FUNC_DEF){
+            // find out main function first
+            if(childNodeList[i]->symbol->name == "main"){
+                mainFuncSymbol = childNodeList[i]->symbol;
+            }
+
+            // if params have array?
+            for(Symbol *funcParam : childNodeList[i]->symbol->params){
+                if(funcParam->dimensions.size() != 0){
+                    funcOutInfluenceMap[childNodeList[i]->symbol] = true;
+                }
+            }
+            if(funcOutInfluenceMap.find(childNodeList[i]->symbol) == funcOutInfluenceMap.end()){
+                funcOutInfluenceMap[childNodeList[i]->symbol] = false;
+            }
+
+            // recursively detect funcCall Graph and if have global assignment
+            bool haveGlobalAssign = generateFuncCallDelInfoRec(childNodeList[i], false, childNodeList[i]->symbol);
+            funcOutInfluenceMap[childNodeList[i]->symbol] = funcOutInfluenceMap[childNodeList[i]->symbol] || haveGlobalAssign;
+        }
+    }
+
+    for(int i = 0; i < childNodeList.size(); i++){
+        if(childNodeList[i]->parseType == parseNode::FUNC_DEF) {
+            unordered_set<Symbol *> callerSet({childNodeList[i]->symbol});
+            int callerSize = -1;
+            while(callerSet.size() != callerSize){
+                for(Symbol *funcSymbol : callerSet){
+                    for(pair<Symbol *, int> caller : funcCalledGraph[funcSymbol]){
+                        if(caller.second == 0){
+                            callerSet.insert(caller.first);
+                        }
+                    }
+                }
+                callerSize = callerSet.size();
+            }
+
+            if(callerSet.find(mainFuncSymbol) == callerSet.end()
+               && funcOutInfluenceMap[childNodeList[i]->symbol] == false){
+                uselessFuncSet.insert(childNodeList[i]->symbol);
+            }
+
+        }
+    }
+}
+
 void AstOptimizer::genDepGraphRec(parseNode *astNode, Symbol * fatherDefSymbol){
     switch(astNode->parseType){
 //        case parseNode::ROOT :{
@@ -195,14 +271,51 @@ void AstOptimizer::generateCriticalVariableSet() {
 }
 
 void AstOptimizer::optimizeAst() {
+    generateDependencyGraph();
+    generateCriticalVariableSet();
     for(auto node : rootNode->nodes){
         if(node->parseType == parseNode::FUNC_DEF){
-            optimizeAstRec(node);
+            optimizeAstRec_1(node);
+        }
+    }
+    generateFuncCallDelInfo();
+    for(auto node : rootNode->nodes){
+        if(node->parseType == parseNode::FUNC_DEF){
+            optimizeAstRec_2(node, node->symbol->dataType);
         }
     }
 }
 
-void AstOptimizer::optimizeAstRec(parseNode *astNode) {
+void AstOptimizer::optimizeAstRec_2(parseNode *astNode, int returnType){
+    vector<parseNode *>::iterator childNodeListItor = astNode->nodes.begin();
+    while(childNodeListItor != astNode->nodes.end()){
+        if((*childNodeListItor)->parseType == parseNode::EXP_STMT
+            &&(*childNodeListItor)->nodes[0]->parseType == parseNode::FUNC_CALL){
+            if(uselessFuncSet.find((*childNodeListItor)->nodes[0]->symbol) != uselessFuncSet.end()){
+                delete (*childNodeListItor);
+                astNode->nodes.erase(childNodeListItor);
+                continue;
+            }
+        }else if((*childNodeListItor)->parseType == parseNode::RETURN_STMT
+                 &&(*childNodeListItor)->nodes[0]->parseType == parseNode::FUNC_CALL){
+            if(uselessFuncSet.find((*childNodeListItor)->nodes[0]->symbol) != uselessFuncSet.end()){
+                delete (*childNodeListItor)->nodes[0];
+                if(returnType == Symbol::INT){
+                    (*childNodeListItor)->nodes[0] = new parseNode(1);
+                }else{
+                    (*childNodeListItor)->nodes[0] = new parseNode((float)1.0);
+                }
+
+                childNodeListItor ++;
+                continue;
+            }
+        }
+        optimizeAstRec_2((*childNodeListItor), returnType);
+        childNodeListItor ++;
+    }
+}
+
+void AstOptimizer::optimizeAstRec_1(parseNode *astNode) {
     // function by function, delete def of none-critical variables
     vector<parseNode *>::iterator childNodeListItor = astNode->nodes.begin();
     while(childNodeListItor != astNode->nodes.end()){
@@ -246,7 +359,7 @@ void AstOptimizer::optimizeAstRec(parseNode *astNode) {
                 continue;
             }
         }
-        optimizeAstRec((*childNodeListItor));
+        optimizeAstRec_1((*childNodeListItor));
         childNodeListItor ++;
     }
 }
