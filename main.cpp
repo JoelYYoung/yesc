@@ -66,10 +66,10 @@ int main(int argc, char **argv)
         Ir.deadExpDelete();
         Ir.commonDelete();
         Ir.loadDelete();
-    }
-    Ir.printBlocks();
+        Ir.printBlocks();
         Ir.LoopInvariant();
         Ir.blockToFunc();
+    }
     Assembler assembler = Assembler(Ir);
     assembler.generateAsm();
     assembler.outputAsm(*output);
