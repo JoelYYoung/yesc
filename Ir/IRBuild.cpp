@@ -740,6 +740,7 @@ void IRBuild::LoopInvariant()
                 }
                 bk->setIRlist(irlist);
             }
+/*
             int firstBlock = back[loopnum].second->BlockId;
             set<int> st;
             map<int, int> mp;
@@ -1078,7 +1079,6 @@ void IRBuild::LoopInvariant()
                     }
                 }
             }
-/*
             vector<IR *> newList;
             map<int, int> idmap;
             for (BaseBlock *bk : loop)
