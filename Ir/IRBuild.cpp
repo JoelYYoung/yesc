@@ -730,18 +730,20 @@ void IRBuild::LoopInvariant()
             for (BaseBlock *bk : loop)
             {
                 vector<IR *> irlist = bk->getIRlist();
-                int num = 0;
+                vector<IR *> copylist(irlist);
+                int num = 0, delnum = 0;
                 int first = irlist.front()->irId;
                 int second;
                 if (irlist.size() >= 2)
                     second = irlist[1]->irId;
-                for (IR *ir : irlist)
+                for (IR *ir : copylist)
                 {
                     if(delIr.count(ir->irId)==1)
                     {
-                        if(ir->irId == first)
+                        if (ir->irId == first)
                             idmap[ir->irId] = second;
-                        irlist.erase(irlist.begin() + num);
+                        irlist.erase(irlist.begin() + num - delnum);
+                        delnum++;
                     }
                     num++;
                 }
