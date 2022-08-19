@@ -726,7 +726,7 @@ void IRBuild::LoopInvariant()
                     delIr.insert(var.second[0]);
                 }
             }
-            map<int, int> idmap;
+            map<int, int> imap;
             for (BaseBlock *bk : loop)
             {
                 vector<IR *> irlist = bk->getIRlist();
@@ -741,7 +741,7 @@ void IRBuild::LoopInvariant()
                     if(delIr.count(ir->irId)==1)
                     {
                         if (ir->irId == first)
-                            idmap[ir->irId] = second;
+                            imap[ir->irId] = second;
                         irlist.erase(irlist.begin() + num - delnum);
                         delnum++;
                     }
@@ -757,9 +757,9 @@ void IRBuild::LoopInvariant()
                     if (ir->type == IR::GOTO || ir->type == IR::BNE || ir->type == IR::BEQ)
                     {
                         int id = ir->items[0]->iVal;
-                        if (idmap.count(id) == 1)
+                        if (imap.count(id) == 1)
                         {
-                            ir->items[0]->iVal = idmap[id];
+                            ir->items[0]->iVal = imap[id];
                         }
                     }
                 }
