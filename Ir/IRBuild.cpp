@@ -765,7 +765,7 @@ void IRBuild::LoopInvariant()
                 }
                 block->setIRlist(irlist);
             }
-/*
+
             int firstBlock = back[loopnum].second->BlockId;
             set<int> st;
             map<int, int> mp;
@@ -1166,7 +1166,7 @@ void IRBuild::LoopInvariant()
                         }
                     }
                     block->setIRlist(irlist);
-                }*/
+                }
                 loopnum++;
         }
         funcNum++;
