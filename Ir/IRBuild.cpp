@@ -751,7 +751,7 @@ void IRBuild::LoopInvariant()
                 vector<IR *> irlist = bk->getIRlist();
                 int num = 0;
                 for (IR *ir : irlist)
-                {
+                { 
                     if(ir->type == IR::LDR && ir->items[1]->type == IRItem::SYMBOL)
                     {
                         ldr[ir->items[1]->symbol].push_back(make_pair(num,bk));
@@ -773,7 +773,20 @@ void IRBuild::LoopInvariant()
             }
             for(pair<Symbol *, vector<pair<int, BaseBlock *>>> pr : ldr)
             {
-                if(str[pr.first].size() == 0)
+                if(pr.first->symbolType != Symbol::LOCAL_VAR)
+                {
+                    for (pair<int, BaseBlock *> bk : pr.second)
+                    {
+                        vector<IR *> irlist = bk.second->getIRlist();
+                        mp[irlist[bk.first]->items[0]->iVal] = 0;
+                    }
+                    for (pair<int, BaseBlock *> bk : str[pr.first])
+                    {
+                        vector<IR *> irlist = bk.second->getIRlist();
+                        mp[irlist[bk.first]->items[0]->iVal] = 0;
+                    }
+                }
+                else if(str[pr.first].size() == 0)
                 {
                     for(pair<int, BaseBlock *> bk : pr.second)
                     {
