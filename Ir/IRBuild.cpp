@@ -726,19 +726,42 @@ void IRBuild::LoopInvariant()
                     delIr.insert(var.second[0]);
                 }
             }
+            map<int, int> idmap;
             for (BaseBlock *bk : loop)
             {
                 vector<IR *> irlist = bk->getIRlist();
                 int num = 0;
+                int first = irlist.front()->irId;
+                int second;
+                if (irlist.size() >= 2)
+                    second = irlist[1]->irId;
                 for (IR *ir : irlist)
                 {
                     if(delIr.count(ir->irId)==1)
                     {
+                        if(ir->irId == first)
+                            idmap[ir->irId] = second;
                         irlist.erase(irlist.begin() + num);
                     }
                     num++;
                 }
                 bk->setIRlist(irlist);
+            }
+            for (BaseBlock *block : funcBlock)
+            {
+                vector<IR *> irlist = block->getIRlist();
+                for (IR *ir : irlist)
+                {
+                    if (ir->type == IR::GOTO || ir->type == IR::BNE || ir->type == IR::BEQ)
+                    {
+                        int id = ir->items[0]->iVal;
+                        if (idmap.count(id) == 1)
+                        {
+                            ir->items[0]->iVal = idmap[id];
+                        }
+                    }
+                }
+                block->setIRlist(irlist);
             }
 /*
             int firstBlock = back[loopnum].second->BlockId;
