@@ -790,6 +790,8 @@ void IRBuild::LoopInvariant()
                         int flag = 0;
                         for (pair<int, BaseBlock *> bk : pr.second)
                         {
+                            vector<IR *> irlist = bk.second->getIRlist();
+                            mp[irlist[bk.first]->items[0]->iVal] = 0;
                             set<BaseBlock *> st = bk.second->getDoms();
                             if(st.count(strpos.second)!=1)
                             {
@@ -801,87 +803,214 @@ void IRBuild::LoopInvariant()
                         {
                             vector<IR *> irlist = strpos.second->getIRlist();
                             mp[irlist[strpos.first]->items[0]->iVal] = 1;
-                            //st.insert(irlist[strpos.first]->irId);
+                            // st.insert(irlist[strpos.first]->irId);
+                        }
+                    }
+                    else{
+                        for (pair<int, BaseBlock *> bk : pr.second)
+                        {
+                            vector<IR *> irlist = bk.second->getIRlist();
+                            mp[irlist[bk.first]->items[0]->iVal] = 0;
+                        }
+                        for(pair<int, BaseBlock *> bk : str[pr.first])
+                        {
+                            vector<IR *> irlist = bk.second->getIRlist();
+                            mp[irlist[bk.first]->items[0]->iVal] = 0;
                         }
                     }
                 }
             }
-            while (mpsize != mp.size())
+            for (BaseBlock *bk : loop)
             {
-                mpsize = mp.size();
-                for (BaseBlock *bk : loop)
+                vector<IR *> irlist = bk->getIRlist();
+                for (IR *ir : irlist)
                 {
-                    vector<IR *> irlist = bk->getIRlist();
-                    for (IR *ir : irlist)
+                    if (ir->type == IR::MOV)
                     {
-                        if (ir->type == IR::MOV)
+                        if(ir->items[1]->type == IRItem::RETURN)
                         {
-                            if (ir->items[1]->type == IRItem::INT || ir->items[1]->type == IRItem::FLOAT || (mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 1))
+                            mp[ir->items[0]->iVal] = 0;
+                        }
+                        else if (ir->items[1]->type == IRItem::INT || ir->items[1]->type == IRItem::FLOAT || (mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 1))
+                        {
+                            if (mp.count(ir->items[0]->iVal) == 0)
                             {
-                                if(mp.count(ir->items[0]->iVal) == 0)
-                                    mp[ir->items[0]->iVal] = 1;
-                            }
-                            else{
-                                mp[ir->items[0]->iVal] = 0;
+                                mp[ir->items[0]->iVal] = 1;
                             }
                         }
-                        else if ((ir->type == IR::ADD) || (ir->type == IR::SUB) || (ir->type == IR::MUL) || (ir->type == IR::DIV) || (ir->type == IR::DIV) || (ir->type == IR::EQ) || (ir->type == IR::NE) || (ir->type == IR::GE) || (ir->type == IR::GT) || (ir->type == IR::LE) || (ir->type == IR::LT))
+                        else
                         {
-                            if ((mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 1) && (mp.count(ir->items[2]->iVal) == 1 && mp[ir->items[2]->iVal] == 1))
+                            mp[ir->items[0]->iVal] = 0;
+                        }
+                    }
+                    else if ((ir->type == IR::ADD) || (ir->type == IR::SUB) || (ir->type == IR::MUL) || (ir->type == IR::DIV) || (ir->type == IR::DIV) || (ir->type == IR::EQ) || (ir->type == IR::NE) || (ir->type == IR::GE) || (ir->type == IR::GT) || (ir->type == IR::LE) || (ir->type == IR::LT))
+                    {
+                        if ((mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 1) && (mp.count(ir->items[2]->iVal) == 1 && mp[ir->items[2]->iVal] == 1))
+                        {
+                            if (mp.count(ir->items[0]->iVal) == 0)
                             {
-                                if(mp.count(ir->items[0]->iVal) == 0)
-                                    mp[ir->items[0]->iVal] = 1;
-                                else if(mp[ir->items[0]->iVal] == 0)
-                                {
-                                    mp[ir->items[1]->iVal] = 0;
-                                    mp[ir->items[2]->iVal] = 0;
-                                }
+                                mp[ir->items[0]->iVal] = 1;
                             }
-                            else if((mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 0) || (mp.count(ir->items[2]->iVal) == 1 && mp[ir->items[2]->iVal] == 0)){
-                                mp[ir->items[0]->iVal] = 0;
+                            else if (mp[ir->items[0]->iVal] == 0)
+                            {
                                 mp[ir->items[1]->iVal] = 0;
                                 mp[ir->items[2]->iVal] = 0;
                             }
                         }
-                        else if ((ir->type == IR::NOT) || (ir->type == IR::I2F) || (ir->type == IR::F2I) || (ir->type == IR::NEG))
+                        else if (( mp[ir->items[0]->iVal] == 0) || (mp[ir->items[1]->iVal] == 0) || (mp[ir->items[2]->iVal] == 0))
                         {
-                            if (mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 1)
+                            mp[ir->items[0]->iVal] = 0;
+                            mp[ir->items[1]->iVal] = 0;
+                            mp[ir->items[2]->iVal] = 0;
+                        }
+                    }
+                    else if ((ir->type == IR::NOT) || (ir->type == IR::I2F) || (ir->type == IR::F2I) || (ir->type == IR::NEG))
+                    {
+                        if (mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 1)
+                        {
+                            if (mp.count(ir->items[0]->iVal) == 0)
                             {
-                                if(mp.count(ir->items[0]->iVal) == 0)
-                                    mp[ir->items[0]->iVal] = 1;
-                                else if(mp[ir->items[0]->iVal] == 0)
-                                {
-                                    mp[ir->items[1]->iVal] = 0;
-                                }
-                                //st.insert(ir->irId);
+                                mp[ir->items[0]->iVal] = 1;
                             }
-                            else if(mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 0){
-                                mp[ir->items[0]->iVal] = 0;
+                            else if (mp[ir->items[0]->iVal] == 0)
+                            {
+                                mp[ir->items[1]->iVal] = 0;
+                            }
+                            // st.insert(ir->irId);
+                        }
+                        else if (mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 0)
+                        {
+                            mp[ir->items[0]->iVal] = 0;
+                        }
+                    }
+                    else if ((ir->type == IR::LDR && ir->items[1]->type == IRItem::IVAR) || (ir->type == IR::STR && ir->items[1]->type == IRItem::IVAR))
+                    {
+                        if (mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 1)
+                        {
+                            if (mp.count(ir->items[0]->iVal) == 0)
+                            {
+                                mp[ir->items[0]->iVal] = 1;
+                            }
+                            else if (mp[ir->items[0]->iVal] == 0)
+                            {
+                                mp[ir->items[1]->iVal] = 0;
+                            }
+                            // st.insert(ir->irId);
+                        }
+                        else if (mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 0)
+                        {
+                            mp[ir->items[0]->iVal] = 0;
+                        }
+                    }
+                    else if (ir->type == IR::LDR || ir->type == IR::STR)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        for (int i = 0; i < ir->items.size(); i++)
+                        {
+                            if (ir->items[i]->type == IRItem::IVAR || ir->items[i]->type == IRItem::FVAR)
+                            {
+                                mp[ir->items[i]->iVal] = 0;
                             }
                         }
-                        else if((ir->type == IR::LDR && ir->items[1]->type == IRItem::IVAR) || (ir->type == IR::STR && ir->items[1]->type == IRItem::IVAR))
+                    }
+                }
+                reverse(irlist.begin(), irlist.end());
+                for (IR *ir : irlist)
+                {
+                    if (ir->type == IR::MOV)
+                    {
+                        if(ir->items[1]->type == IRItem::RETURN)
                         {
-                            if (mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 1)
+                            mp[ir->items[0]->iVal] = 0;
+                        }
+                        else if (ir->items[1]->type == IRItem::INT || ir->items[1]->type == IRItem::FLOAT || (mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 1))
+                        {
+                            if (mp.count(ir->items[0]->iVal) == 0)
                             {
-                                if(mp.count(ir->items[0]->iVal) == 0)
-                                    mp[ir->items[0]->iVal] = 1;
-                                else if(mp[ir->items[0]->iVal] == 0)
-                                {
-                                    mp[ir->items[1]->iVal] = 0;
-                                }
-                                //st.insert(ir->irId);
-                            }
-                            else if(mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 0){
-                                mp[ir->items[0]->iVal] = 0;
+                                mp[ir->items[0]->iVal] = 1;
                             }
                         }
-                        else{
-                            for (int i = 0; i < ir->items.size(); i++)
+                        else if(mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 0)
+                        {
+                            mp[ir->items[0]->iVal] = 0;
+                            mp[ir->items[1]->iVal] = 0;
+                        }
+                    }
+                    else if ((ir->type == IR::ADD) || (ir->type == IR::SUB) || (ir->type == IR::MUL) || (ir->type == IR::DIV) || (ir->type == IR::DIV) || (ir->type == IR::EQ) || (ir->type == IR::NE) || (ir->type == IR::GE) || (ir->type == IR::GT) || (ir->type == IR::LE) || (ir->type == IR::LT))
+                    {
+                        if ((mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 1) && (mp.count(ir->items[2]->iVal) == 1 && mp[ir->items[2]->iVal] == 1))
+                        {
+                            if (mp.count(ir->items[0]->iVal) == 0)
                             {
-                                if(ir->items[i]->type == IRItem::IVAR || ir->items[i]->type == IRItem::FVAR)
-                                {
-                                    mp[ir->items[i]->iVal] = 0;
-                                }
+                                mp[ir->items[0]->iVal] = 1;
+                            }
+                            else if (mp[ir->items[0]->iVal] == 0)
+                            {
+                                mp[ir->items[1]->iVal] = 0;
+                                mp[ir->items[2]->iVal] = 0;
+                            }
+                        }
+                        else if ((mp.count(ir->items[0]->iVal) == 1 && mp[ir->items[0]->iVal] == 0) || (mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 0) || (mp.count(ir->items[2]->iVal) == 1 && mp[ir->items[2]->iVal] == 0))
+                        {
+                            mp[ir->items[0]->iVal] = 0;
+                            mp[ir->items[1]->iVal] = 0;
+                            mp[ir->items[2]->iVal] = 0;
+                        }
+                    }
+                    else if ((ir->type == IR::NOT) || (ir->type == IR::I2F) || (ir->type == IR::F2I) || (ir->type == IR::NEG))
+                    {
+                        if (mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 1)
+                        {
+                            if (mp.count(ir->items[0]->iVal) == 0)
+                            {
+                                mp[ir->items[0]->iVal] = 1;
+                            }
+                            else if (mp[ir->items[0]->iVal] == 0)
+                            {
+                                mp[ir->items[1]->iVal] = 0;
+                            }
+                            // st.insert(ir->irId);
+                        }
+                        else if ((mp.count(ir->items[0]->iVal) == 1 && mp[ir->items[0]->iVal] == 0) || (mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 0))
+                        {
+                            mp[ir->items[0]->iVal] = 0;
+                            mp[ir->items[1]->iVal] = 0;
+                        }
+                    }
+                    else if ((ir->type == IR::LDR && ir->items[1]->type == IRItem::IVAR) || (ir->type == IR::STR && ir->items[1]->type == IRItem::IVAR))
+                    {
+                        if (mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 1)
+                        {
+                            if (mp.count(ir->items[0]->iVal) == 0)
+                            {
+                                mp[ir->items[0]->iVal] = 1;
+                            }
+                            else if (mp[ir->items[0]->iVal] == 0)
+                            {
+                                mp[ir->items[1]->iVal] = 0;
+                            }
+                            // st.insert(ir->irId);
+                        }
+                        else if ((mp.count(ir->items[0]->iVal) == 1 && mp[ir->items[0]->iVal] == 0) || (mp.count(ir->items[1]->iVal) == 1 && mp[ir->items[1]->iVal] == 0))
+                        {
+                            mp[ir->items[0]->iVal] = 0;
+                            mp[ir->items[1]->iVal] = 0;
+                        }
+                    }
+                    else if (ir->type == IR::LDR || ir->type == IR::STR)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        for (int i = 0; i < ir->items.size(); i++)
+                        {
+                            if (ir->items[i]->type == IRItem::IVAR || ir->items[i]->type == IRItem::FVAR)
+                            {
+                                mp[ir->items[i]->iVal] = 0;
                             }
                         }
                     }
@@ -896,6 +1025,10 @@ void IRBuild::LoopInvariant()
                     {
                         if (ir->type == IR::MOV)
                         {
+                            if(ir->items[1]->type == IRItem::RETURN)
+                            {
+                                continue;
+                            }
                             if ((ir->items[1]->type == IRItem::INT || ir->items[1]->type == IRItem::FLOAT || mp[ir->items[1]->iVal] == 1) && mp[ir->items[0]->iVal] == 1)
                             {
                                 st.insert(ir->irId);
