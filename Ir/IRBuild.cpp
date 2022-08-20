@@ -247,30 +247,55 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
     nameid = varId;
     if (isArray)
     {
-        ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, 0)}));
-        nowid = varId;
-        for (int i = pn->nodes.size() - 1; i >= 0; i--)
+        if(pn->nodes.size() == 1)
         {
-            if (pn->nodes[i]->parseType == parseNode::INT_LITERAL) // a[i-1][3]
+            if (pn->nodes[0]->parseType == parseNode::INT_LITERAL) // a[i-1][3]
             {
-                arrayOffset += pn->nodes[i]->iVal * d;
-                    // cout << arrayOffset << endl;
+                arrayOffset += pn->nodes[0]->iVal * d;
+                //cout << arrayOffset << endl;
             }
             else
             {
-                vector<IR *> expir = parseTree(pn->nodes[i], sym, att);
+                vector<IR *> expir = parseTree(pn->nodes[0], sym, att);
                 ir.insert(ir.end(), expir.begin(), expir.end());
                 ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, d * 4)}));
                 varId++;
                 ir.push_back(new IR(IR::MUL, {new IRItem(IRItem::IVAR, varId), new IRItem(IRItem::IVAR, expir.back()->items[0]->iVal), new IRItem(IRItem::IVAR, varId - 1)}));
-                varId++;
-                ir.push_back(new IR(IR::ADD, {new IRItem(IRItem::IVAR, varId), new IRItem(IRItem::IVAR, varId - 1), new IRItem(IRItem::IVAR, nowid)}));
                 nowid = varId;
             }
-            d *= pn->symbol->dimensions[i];
         }
+        else{
+            ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, 0)}));
+            nowid = varId;
+            for (int i = pn->nodes.size() - 1; i >= 0; i--)
+            {
+                if (pn->nodes[i]->parseType == parseNode::INT_LITERAL) // a[i-1][3]
+                {
+                    arrayOffset += pn->nodes[i]->iVal * d;
+                    // cout << arrayOffset << endl;
+                }
+                else
+                {
+                    vector<IR *> expir = parseTree(pn->nodes[i], sym, att);
+                    ir.insert(ir.end(), expir.begin(), expir.end());
+                    ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, d * 4)}));
+                    varId++;
+                    ir.push_back(new IR(IR::MUL, {new IRItem(IRItem::IVAR, varId), new IRItem(IRItem::IVAR, expir.back()->items[0]->iVal), new IRItem(IRItem::IVAR, varId - 1)}));
+                    varId++;
+                    ir.push_back(new IR(IR::ADD, {new IRItem(IRItem::IVAR, varId), new IRItem(IRItem::IVAR, varId - 1), new IRItem(IRItem::IVAR, nowid)}));
+                    nowid = varId;
+                }
+                d *= pn->symbol->dimensions[i];
+            }
+        }
+        //cout << varId << ' ' << nowid << endl;
         if(arrayOffset!=0)
-            ir.push_back(new IR(IR::ADD, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::IVAR, nowid), new IRItem(IRItem::INT, arrayOffset * 4)}));
+        {
+            if(pn->nodes.size() == 1)
+                ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, arrayOffset * 4)}));
+            else
+                ir.push_back(new IR(IR::ADD, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::IVAR, nowid), new IRItem(IRItem::INT, arrayOffset * 4)}));
+        }
         int newid = varId;
         if (pn->nodes.size() < pn->symbol->dimensions.size())
         {
