@@ -8,7 +8,7 @@ bool parseNode::nodeEq(parseNode *n2) {
         && (this->symbol == n2->symbol)
         && (this->iVal == n2->iVal)
         && (this->fVal == n2->fVal)
-        && (this->opType == this->opType)
+        && (this->opType == n2->opType)
         && (this->nodes.size() == n2->nodes.size())))      return false;
 
     int childSize = this->nodes.size();
