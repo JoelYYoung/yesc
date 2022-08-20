@@ -249,6 +249,8 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
     {
         if(pn->nodes.size() == 1)
         {
+            ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, 0)}));
+            nowid = varId;
             if (pn->nodes[0]->parseType == parseNode::INT_LITERAL) // a[i-1][3]
             {
                 arrayOffset += pn->nodes[0]->iVal * d;
@@ -291,10 +293,7 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
         //cout << varId << ' ' << nowid << endl;
         if(arrayOffset!=0)
         {
-            if(pn->nodes.size() == 1)
-                ir.push_back(new IR(IR::MOV, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::INT, arrayOffset * 4)}));
-            else
-                ir.push_back(new IR(IR::ADD, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::IVAR, nowid), new IRItem(IRItem::INT, arrayOffset * 4)}));
+            ir.push_back(new IR(IR::ADD, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::IVAR, nowid), new IRItem(IRItem::INT, arrayOffset * 4)}));
         }
         int newid = varId;
         if (pn->nodes.size() < pn->symbol->dimensions.size())
