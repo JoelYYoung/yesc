@@ -74,5 +74,6 @@ public:
   parseNode(float);
   parseNode(int);
   parseNode(string);
+  bool nodeEq(parseNode *);
   ~parseNode();
 };
