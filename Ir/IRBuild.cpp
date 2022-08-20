@@ -155,21 +155,30 @@ vector<IR *> IRBuild::parseAssignExp(parseNode * pn, Symbol * sym,Attribute * at
             ir.push_back(new IR(IR::STR, {new IRItem(IRItem::FVAR, varId), new IRItem(ir1[ir1.size()-2]->items[0]->type, ir1[ir1.size()-2]->items[0]->iVal)}));
         return ir;
     }
-    vector<IR *> ir2 = parseTree(pn->nodes[1], sym, att);
-    vector<IR *> ir1 = parseTree(pn->nodes[0], sym, att);
-    ir.insert(ir.end(), ir2.begin(), ir2.end());
-    ir.insert(ir.end(), ir1.begin(), ir1.end());
-    if (pn->nodes[0]->nodes.size() == 0)
+    if(pn->nodes.size() == 2 && pn->nodes[1]->nodes.size()==2 && pn->nodes[0]->nodeEq(pn->nodes[1]->nodes[0]) && pn->nodes[0]->symbol->dimensions.size()!=0)
     {
-        if(pn->nodes[0]->symbol->symbolType == Symbol::GLOBAL_VAR || pn->nodes[0]->symbol->symbolType == Symbol::CONST)
-        {
-            ir.push_back(new IR(IR::STR, {new IRItem(ir2.back()->items[0]->type, ir2.back()->items[0]->iVal), new IRItem(ir1[ir1.size()-2]->items[0]->type, ir1[ir1.size()-2]->items[0]->iVal)}));
-        }
-        else
-            ir.push_back(new IR(IR::STR, {new IRItem(ir2.back()->items[0]->type, ir2.back()->items[0]->iVal), new IRItem(IRItem::SYMBOL, pn->nodes[0]->symbol)}));
+        vector<IR *> ir2 = parseTree(pn->nodes[1], sym, att);
+        ir.insert(ir.end(), ir2.begin(), ir2.end());
+        ir.push_back(new IR(IR::STR, {new IRItem(ir2.back()->items[0]->type, ir2.back()->items[0]->iVal), new IRItem(ir2[ir2.size() - 3]->items[1]->type, ir2[ir2.size() - 3]->items[1]->iVal)}));
     }
     else
-        ir.push_back(new IR(IR::STR, {new IRItem(ir2.back()->items[0]->type, ir2.back()->items[0]->iVal), new IRItem(ir1[ir1.size() - 2]->items[0]->type, ir1[ir1.size() - 2]->items[0]->iVal)}));
+    {
+        vector<IR *> ir2 = parseTree(pn->nodes[1], sym, att);
+        vector<IR *> ir1 = parseTree(pn->nodes[0], sym, att);
+        ir.insert(ir.end(), ir2.begin(), ir2.end());
+        ir.insert(ir.end(), ir1.begin(), ir1.end());
+        if (pn->nodes[0]->nodes.size() == 0)
+        {
+            if (pn->nodes[0]->symbol->symbolType == Symbol::GLOBAL_VAR || pn->nodes[0]->symbol->symbolType == Symbol::CONST)
+            {
+                ir.push_back(new IR(IR::STR, {new IRItem(ir2.back()->items[0]->type, ir2.back()->items[0]->iVal), new IRItem(ir1[ir1.size() - 2]->items[0]->type, ir1[ir1.size() - 2]->items[0]->iVal)}));
+            }
+            else
+                ir.push_back(new IR(IR::STR, {new IRItem(ir2.back()->items[0]->type, ir2.back()->items[0]->iVal), new IRItem(IRItem::SYMBOL, pn->nodes[0]->symbol)}));
+        }
+        else
+            ir.push_back(new IR(IR::STR, {new IRItem(ir2.back()->items[0]->type, ir2.back()->items[0]->iVal), new IRItem(ir1[ir1.size() - 2]->items[0]->type, ir1[ir1.size() - 2]->items[0]->iVal)}));
+    }
     return ir;
 }
 

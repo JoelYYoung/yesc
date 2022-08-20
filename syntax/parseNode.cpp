@@ -3,6 +3,23 @@
 #include "parseNode.h"
 
 using namespace std;
+bool parseNode::nodeEq(parseNode *n2) {
+    if(!((this->parseType == n2->parseType)
+        && (this->symbol == n2->symbol)
+        && (this->iVal == n2->iVal)
+        && (this->fVal == n2->fVal)
+        && (this->opType == this->opType)
+        && (this->nodes.size() == n2->nodes.size())))      return false;
+
+    int childSize = this->nodes.size();
+    for(int i = 0; i < childSize; i++){
+        if(this->nodes[i]->nodeEq(n2->nodes[i]) == false){
+            return false;
+        }
+    }
+    return true;
+}
+
 string parseNode::toString(){
   string str;
   switch (parseType)
