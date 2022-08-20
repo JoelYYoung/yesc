@@ -270,7 +270,8 @@ vector<IR*> IRBuild::parseLVal(parseNode * pn, Symbol * sym,Attribute * att)
             d *= pn->symbol->dimensions[i];
         }
         //cout << varId << ' ' << nowid << endl;
-        ir.push_back(new IR(IR::ADD, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::IVAR, nowid), new IRItem(IRItem::INT, arrayOffset * 4)}));
+        if(arrayOffset!=0)
+            ir.push_back(new IR(IR::ADD, {new IRItem(IRItem::IVAR, ++varId), new IRItem(IRItem::IVAR, nowid), new IRItem(IRItem::INT, arrayOffset * 4)}));
         int newid = varId;
         if (pn->nodes.size() < pn->symbol->dimensions.size())
         {
