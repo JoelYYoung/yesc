@@ -27,6 +27,8 @@ private:
     void genCriticalVarRec(parseNode *astNode);
     void optimizeAstRec_1(parseNode *astNode);
     void optimizeAstRec_2(parseNode *astNode, int returnType);
+    void removeIfRec(parseNode *astNode);
+    void removeWhileRec(parseNode *astNode);
     bool haveFuncCallRec(parseNode *astNode);
     bool generateFuncCallDelInfoRec(parseNode *astNode, bool fatherIsExp, Symbol *funcSymbol);
     //recursively generate def and use Map
