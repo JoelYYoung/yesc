@@ -155,7 +155,7 @@ vector<IR *> IRBuild::parseAssignExp(parseNode * pn, Symbol * sym,Attribute * at
             ir.push_back(new IR(IR::STR, {new IRItem(IRItem::FVAR, varId), new IRItem(ir1[ir1.size()-2]->items[0]->type, ir1[ir1.size()-2]->items[0]->iVal)}));
         return ir;
     }
-    if(pn->nodes.size() == 2 && pn->nodes[1]->nodes.size()==2 && pn->nodes[0]->nodeEq(pn->nodes[1]->nodes[0]) && pn->nodes[0]->symbol->dimensions.size()!=0)
+    if(pn->nodes.size() == 2 && pn->nodes[1]->nodes.size()==2 && pn->nodes[0]->nodeEq(pn->nodes[1]->nodes[0]) && pn->nodes[0]->symbol->dimensions.size()!=0 && pn->nodes[1]->nodes[1]->parseType == parseNode::INT_LITERAL)
     {
         vector<IR *> ir2 = parseTree(pn->nodes[1], sym, att);
         ir.insert(ir.end(), ir2.begin(), ir2.end());
