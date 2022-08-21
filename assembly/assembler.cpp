@@ -2315,86 +2315,11 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
             case IR::MEMSET_ZERO:{
 
 
-//                IRItem *op1 = funcIr->items[0];
-//
-//                int symbolStackOffset = symbolStackOffsetMap[op1->symbol]*4;
-//                if(symbolStackOffset < 255){
-//                    buffer << "SUB r10, ip, #" << symbolStackOffset;
-//                    irAsmVectorMap[irId].push_back(buffer.str());
-//                    buffer.clear();
-//                    buffer.str("");
-//                }else{
-//                    buffer << "MOVW r11, #:lower16:"
-//                           << *((unsigned *) (&(symbolStackOffset)));
-//                    irAsmVectorMap[irId].push_back(buffer.str());
-//                    buffer.clear();
-//                    buffer.str("");
-//                    buffer << "MOVT r11, #:upper16:"
-//                           << *((unsigned *) (&(symbolStackOffset)));
-//                    irAsmVectorMap[irId].push_back(buffer.str());
-//                    buffer.clear();
-//                    buffer.str("");
-//
-//                    buffer << "SUB r10, ip, r11";
-//                    irAsmVectorMap[irId].push_back(buffer.str());
-//                    buffer.clear();
-//                    buffer.str("");
-//                }
-//
-//                int zeroSize = 1;
-//                for(int dimSize : op1->symbol->dimensions){
-//                    zeroSize *= dimSize;
-//                }
-//
-//                buffer << "MOV r11, #0";
-//                irAsmVectorMap[irId].push_back(buffer.str());
-//                buffer.clear();
-//                buffer.str("");
-//
-//                for(int i = 0; i < zeroSize; i++){
-//                    buffer << "STR r11, [r10]";
-//                    irAsmVectorMap[irId].push_back(buffer.str());
-//                    buffer.clear();
-//                    buffer.str("");
-//                    buffer << "ADD r10, #4";
-//                    irAsmVectorMap[irId].push_back(buffer.str());
-//                    buffer.clear();
-//                    buffer.str("");
-//                }
-
                 IRItem *op1 = funcIr->items[0];
-                int zeroSize = 1;
-                for(int dimSize : op1->symbol->dimensions){
-                    zeroSize *= dimSize;
-                }
-                zeroSize *= 4;
 
-                irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                 int symbolStackOffset = symbolStackOffsetMap[op1->symbol]*4;
-                irAsmVectorMap[irId].push_back("SUB sp, sp, #4");
-                if(zeroSize < 255){
-                    buffer << "MOVS r2, #" << zeroSize;
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    buffer.clear();
-                    buffer.str("");
-                }else{
-                    buffer << "MOVW r2, #:lower16:" << zeroSize;
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    buffer.clear();
-                    buffer.str("");
-                    buffer << "MOVT r2, #:upper16:" << zeroSize;
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    buffer.clear();
-                    buffer.str("");
-                }
-
-                buffer << "MOVS r1, #0";
-                irAsmVectorMap[irId].push_back(buffer.str());
-                buffer.clear();
-                buffer.str("");
-
                 if(symbolStackOffset < 255){
-                    buffer << "SUB r0, ip, #" << symbolStackOffset;
+                    buffer << "SUB r10, ip, #" << symbolStackOffset;
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
@@ -2410,17 +2335,92 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
 
-                    buffer << "SUB r0, ip, r11";
+                    buffer << "SUB r10, ip, r11";
                     irAsmVectorMap[irId].push_back(buffer.str());
                     buffer.clear();
                     buffer.str("");
                 }
 
+                int zeroSize = 1;
+                for(int dimSize : op1->symbol->dimensions){
+                    zeroSize *= dimSize;
+                }
 
+                buffer << "MOV r11, #0";
+                irAsmVectorMap[irId].push_back(buffer.str());
+                buffer.clear();
+                buffer.str("");
 
-                irAsmVectorMap[irId].push_back("BL memset");
-                irAsmVectorMap[irId].push_back("ADD sp, sp, #4");
-                irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
+                for(int i = 0; i < zeroSize; i++){
+                    buffer << "STR r11, [r10]";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                    buffer << "ADD r10, #4";
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                }
+
+//                IRItem *op1 = funcIr->items[0];
+//                int zeroSize = 1;
+//                for(int dimSize : op1->symbol->dimensions){
+//                    zeroSize *= dimSize;
+//                }
+//                zeroSize *= 4;
+//
+//                irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
+//                int symbolStackOffset = symbolStackOffsetMap[op1->symbol]*4;
+//                irAsmVectorMap[irId].push_back("SUB sp, sp, #4");
+//                if(zeroSize < 255){
+//                    buffer << "MOVS r2, #" << zeroSize;
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                }else{
+//                    buffer << "MOVW r2, #:lower16:" << zeroSize;
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                    buffer << "MOVT r2, #:upper16:" << zeroSize;
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                }
+//
+//                buffer << "MOVS r1, #0";
+//                irAsmVectorMap[irId].push_back(buffer.str());
+//                buffer.clear();
+//                buffer.str("");
+//
+//                if(symbolStackOffset < 255){
+//                    buffer << "SUB r0, ip, #" << symbolStackOffset;
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                }else{
+//                    buffer << "MOVW r11, #:lower16:"
+//                           << *((unsigned *) (&(symbolStackOffset)));
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                    buffer << "MOVT r11, #:upper16:"
+//                           << *((unsigned *) (&(symbolStackOffset)));
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//
+//                    buffer << "SUB r0, ip, r11";
+//                    irAsmVectorMap[irId].push_back(buffer.str());
+//                    buffer.clear();
+//                    buffer.str("");
+//                }
+//
+//
+//
+//                irAsmVectorMap[irId].push_back("BL memset");
+//                irAsmVectorMap[irId].push_back("ADD sp, sp, #4");
+//                irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                 break;
             }
             default :{
