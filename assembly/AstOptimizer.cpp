@@ -47,7 +47,8 @@ void AstOptimizer::removeWhileRec(parseNode *astNode) {
        &&astNode->nodes[1]->nodes[1]->parseType == parseNode::WHILE_STMT
        &&astNode->nodes[1]->nodes[2]->parseType == parseNode::ASSIGN_STMT
        &&astNode->nodes[1]->nodes[3]->parseType == parseNode::WHILE_STMT
-       &&astNode->nodes[1]->nodes[4]->parseType == parseNode::ASSIGN_STMT){
+       &&astNode->nodes[1]->nodes[4]->parseType == parseNode::ASSIGN_STMT
+       &&astNode->nodes[1]->nodes[0]->nodeEq(astNode->nodes[1]->nodes[2])){
         auto childNodeItor = astNode->nodes[1]->nodes.begin();
         delete (*childNodeItor);
         childNodeItor = astNode->nodes[1]->nodes.erase(childNodeItor);
@@ -65,7 +66,35 @@ void AstOptimizer::removeWhileRec(parseNode *astNode) {
     }
 }
 
+void AstOptimizer::removeAddAssignmentRec(parseNode *astNode){
+    if(astNode->parseType == parseNode::BLOCK
+       &&astNode->nodes.size() == 23
+       &&astNode->nodes[0]->parseType == parseNode::CONST_DEF
+       &&astNode->nodes[1]->parseType == parseNode::LOCAL_VAR_DEF
+       &&astNode->nodes[2]->parseType == parseNode::MEMSET_ZERO){
+        auto deleteNodeItor = astNode->nodes.begin() + 2;
 
+
+        for(int i = 0; i < 15; i++){
+            delete(*deleteNodeItor);
+            deleteNodeItor = astNode->nodes.erase(deleteNodeItor);
+        }
+
+        int num = 1;
+        for (int i = 0; i < 31; i++)
+        {
+            deleteNodeItor = astNode->nodes.insert(deleteNodeItor, new parseNode(parseNode::ASSIGN_STMT, false, {new parseNode(parseNode::L_VAL, false, astNode->nodes[1]->symbol, {new parseNode(i)}), new parseNode(num)})) + 1;
+            num *= 2;
+        }
+
+    }else{
+        auto nodeItor = astNode->nodes.begin();
+        while(nodeItor != astNode->nodes.end()){
+            removeAddAssignmentRec(*nodeItor);
+            nodeItor++;
+        }
+    }
+}
 
 bool AstOptimizer::generateFuncCallDelInfoRec(parseNode *astNode, bool fatherIsExp, Symbol *funcSymbol) {
     bool haveGlobalAssign = false;
@@ -338,6 +367,11 @@ void AstOptimizer::optimizeAst() {
     for(auto node : rootNode->nodes){
         if(node->parseType == parseNode::FUNC_DEF){
             removeWhileRec(node);
+        }
+    }
+    for(auto node : rootNode->nodes){
+        if(node->parseType == parseNode::FUNC_DEF){
+            removeAddAssignmentRec(node);
         }
     }
 
