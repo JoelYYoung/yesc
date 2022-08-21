@@ -160,6 +160,13 @@ parseNode::parseNode(string str) {
 }
 
 parseNode::~parseNode() {
-  for (parseNode *node : nodes)
-    delete node;
+    parseNode * previous = NULL;
+    for (parseNode *node : nodes)
+    if(node != previous){
+        delete node;
+        previous = node;
+    }else{
+        continue;
+    }
+
 }
