@@ -603,6 +603,17 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 break;
             }
             case IR::LDR:{
+                IR *nextIr = funcIR[irIndex+1];
+
+                if(nextIr->type == IR::STR
+                   &&nextIr->items.size() == 2
+                   &&funcIr->items.size() == 2
+                   &&nextIr->items[1]->type == IRItem::IVAR
+                   &&funcIr->items[1]->type == IRItem::IVAR
+                   &&nextIr->items[1]->iVal == funcIr->items[1]->iVal){
+                    break;
+                }
+
                 int op1Id = funcIr->items[0]->iVal;
                 IRItem *op2 = funcIr->items[1];  // IVAR/FVAR/INT/FLOAT
                 vector<int> tmpVarList({op1Id, });
