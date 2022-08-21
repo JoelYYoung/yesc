@@ -2371,7 +2371,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
 
                 irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                 int symbolStackOffset = symbolStackOffsetMap[op1->symbol]*4;
-
+                irAsmVectorMap[irId].push_back("SUB sp, sp, #4");
                 if(zeroSize < 255){
                     buffer << "MOVS r2, #" << zeroSize;
                     irAsmVectorMap[irId].push_back(buffer.str());
@@ -2392,7 +2392,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                 irAsmVectorMap[irId].push_back(buffer.str());
                 buffer.clear();
                 buffer.str("");
-                
+
                 if(symbolStackOffset < 255){
                     buffer << "SUB r0, ip, #" << symbolStackOffset;
                     irAsmVectorMap[irId].push_back(buffer.str());
@@ -2419,6 +2419,7 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
 
 
                 irAsmVectorMap[irId].push_back("BL memset");
+                irAsmVectorMap[irId].push_back("ADD sp, sp, #4");
                 irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
                 break;
             }
