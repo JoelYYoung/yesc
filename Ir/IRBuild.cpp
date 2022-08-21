@@ -551,6 +551,15 @@ vector<IR*> IRBuild::parseWhileStmt(parseNode* pn, Symbol * sym,Attribute * att)
     vector<IR *> irtest = parseTree(pn->nodes[1], sym, att);
     att->breakLabel = irtest.back()->irId + 2;
     ir1[0]->deleteIr(irtest.size());
+    for(IR* ir: irtest)
+    {
+        if(NULL != ir)
+        {
+            delete ir;
+            ir = NULL;
+        }
+    }
+    irtest.clear();
     vector<IR *> ir2 = parseTree(pn->nodes[1], sym, att);
     att->breakLabel = break_last;
     att->continueLabel = continue_last;
