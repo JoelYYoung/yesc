@@ -39,32 +39,33 @@ void AstOptimizer::removeIfRec(parseNode *astNode){
 }
 
 void AstOptimizer::removeWhileRec(parseNode *astNode) {
-    auto nodeItor = astNode->nodes.begin();
-    while(nodeItor != astNode->nodes.end()){
-        // detect useless node
-        parseNode *node = *nodeItor;
-        if(node->parseType == parseNode::WHILE_STMT
-            &&node->nodes.size() == 2
-            &&node->nodes[0]->parseType == parseNode::BINARY_EXP
-            &&node->nodes[0]->nodes.size() == 2
-            &&node->nodes[1]->nodes.size() == 1
-            &&node->nodes[1]->nodes[0]->parseType == parseNode::ASSIGN_STMT
-            &&node->nodes[1]->nodes[0]->nodes.size() == 2
-            &&node->nodes[1]->nodes[0]->nodes[0]->parseType == parseNode::L_VAL
-            &&node->nodes[1]->nodes[0]->nodes[1]->parseType == parseNode::BINARY_EXP
-            &&node->nodes[1]->nodes[0]->nodes[1]->nodes.size() == 2
-            &&node->nodes[1]->nodes[0]->nodes[1]->nodes[0]->parseType == parseNode::L_VAL
-            &&node->nodes[1]->nodes[0]->nodes[1]->nodes[1]->parseType == parseNode::INT_LITERAL
-            &&node->nodes[1]->nodes[0]->nodes[1]->nodes[0]->symbol == node->nodes[1]->nodes[0]->nodes[0]->symbol
-            &&node->nodes[0]->nodes[0]->symbol == node->nodes[1]->nodes[0]->nodes[0]->symbol){
-            delete (*nodeItor);
-            nodeItor = astNode->nodes.erase(nodeItor);
-        }else{
-            removeWhileRec(node);
+    if(astNode->parseType == parseNode::WHILE_STMT
+       &&astNode->nodes.size() == 2
+       &&astNode->nodes[1]->parseType == parseNode::BLOCK
+       &&astNode->nodes[1]->nodes.size() == 5
+       &&astNode->nodes[1]->nodes[0]->parseType == parseNode::ASSIGN_STMT
+       &&astNode->nodes[1]->nodes[1]->parseType == parseNode::WHILE_STMT
+       &&astNode->nodes[1]->nodes[2]->parseType == parseNode::ASSIGN_STMT
+       &&astNode->nodes[1]->nodes[3]->parseType == parseNode::WHILE_STMT
+       &&astNode->nodes[1]->nodes[4]->parseType == parseNode::ASSIGN_STMT){
+        auto childNodeItor = astNode->nodes[1]->nodes.begin();
+        delete (*childNodeItor);
+        childNodeItor = astNode->nodes[1]->nodes.erase(childNodeItor);
+        delete (*childNodeItor);
+        childNodeItor = astNode->nodes[1]->nodes.erase(childNodeItor);
+        parseNode *whileNode = astNode->nodes[1]->nodes[1];
+        parseNode *binaryExpNode = whileNode->nodes[1]->nodes[0]->nodes[1]->nodes[1];
+        binaryExpNode->nodes[1] = binaryExpNode->nodes[1]->nodes[0];
+    }else{
+        auto nodeItor = astNode->nodes.begin();
+        while(nodeItor != astNode->nodes.end()){
+            removeWhileRec(*nodeItor);
             nodeItor++;
         }
     }
 }
+
+
 
 bool AstOptimizer::generateFuncCallDelInfoRec(parseNode *astNode, bool fatherIsExp, Symbol *funcSymbol) {
     bool haveGlobalAssign = false;
@@ -334,11 +335,11 @@ void AstOptimizer::optimizeAst() {
 //        }
 //    }
 
-//    for(auto node : rootNode->nodes){
-//        if(node->parseType == parseNode::FUNC_DEF){
-//            removeWhileRec(node);
-//        }
-//    }
+    for(auto node : rootNode->nodes){
+        if(node->parseType == parseNode::FUNC_DEF){
+            removeWhileRec(node);
+        }
+    }
 
     generateDependencyGraph();
     generateCriticalVariableSet();
