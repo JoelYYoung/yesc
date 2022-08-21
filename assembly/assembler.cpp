@@ -2371,6 +2371,28 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
 
                 irAsmVectorMap[irId].push_back("PUSH {r0-r3, ip}");
                 int symbolStackOffset = symbolStackOffsetMap[op1->symbol]*4;
+
+                if(zeroSize < 255){
+                    buffer << "MOVS r2, #" << zeroSize;
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                }else{
+                    buffer << "MOVW r2, #:lower16:" << zeroSize;
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                    buffer << "MOVT r2, #:upper16:" << zeroSize;
+                    irAsmVectorMap[irId].push_back(buffer.str());
+                    buffer.clear();
+                    buffer.str("");
+                }
+
+                buffer << "MOVS r1, #0";
+                irAsmVectorMap[irId].push_back(buffer.str());
+                buffer.clear();
+                buffer.str("");
+                
                 if(symbolStackOffset < 255){
                     buffer << "SUB r0, ip, #" << symbolStackOffset;
                     irAsmVectorMap[irId].push_back(buffer.str());
@@ -2393,25 +2415,8 @@ void Assembler::singleFunctionAsm(pair<Symbol *, vector<IR *>> & func) {
                     buffer.clear();
                     buffer.str("");
                 }
-                buffer << "MOV r1, #0";
-                irAsmVectorMap[irId].push_back(buffer.str());
-                buffer.clear();
-                buffer.str("");
-                if(zeroSize < 255){
-                    buffer << "MOV r2, #" << zeroSize;
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    buffer.clear();
-                    buffer.str("");
-                }else{
-                    buffer << "MOVW r2, #:lower16:" << zeroSize;
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    buffer.clear();
-                    buffer.str("");
-                    buffer << "MOVT r2, #:upper16:" << zeroSize;
-                    irAsmVectorMap[irId].push_back(buffer.str());
-                    buffer.clear();
-                    buffer.str("");
-                }
+
+
 
                 irAsmVectorMap[irId].push_back("BL memset");
                 irAsmVectorMap[irId].push_back("POP {r0-r3, ip}");
